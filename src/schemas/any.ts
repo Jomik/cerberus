@@ -2,15 +2,12 @@ import { test, mergeResults } from "../utils";
 import { SchemaResult } from "../types";
 
 export class Schema<A = any> {
-  validate: (obj: any, current: SchemaResult<A>) => SchemaResult<A>;
   constructor(
-    validate = test<A>(
+    public validate: (obj: any) => SchemaResult<A> = test<A>(
       (obj) => obj !== undefined,
       (name) => `${name} can not be undefined`
     )
-  ) {
-    this.validate = validate;
-  }
+  ) {}
 
   optional(): Schema<A | undefined> {
     return this.or<undefined>(
@@ -23,12 +20,12 @@ export class Schema<A = any> {
   }
 
   or<B>(other: Schema<B>): Schema<A | B> {
-    return new Schema<A | B>((obj: any, current: SchemaResult<A | B>) => {
-      const result1 = this.validate(obj, { valid: true, obj });
+    return new Schema<A | B>((obj: any) => {
+      const result1 = this.validate(obj);
       if (result1.valid) {
         return result1;
       } else {
-        const result2 = other.validate(obj, { valid: true, obj });
+        const result2 = other.validate(obj);
         if (result2.valid) {
           return result2;
         }

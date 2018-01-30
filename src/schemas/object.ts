@@ -9,12 +9,12 @@ export type ObjectSpecification<A extends object> = {
 
 export class ObjectSchema<A extends object> extends Schema<A> {
   constructor(spec: ObjectSpecification<A>) {
-    super((obj, current: SchemaResult<A>) => {
-      let result = current;
+    super((obj) => {
+      let result: SchemaResult<A> = { valid: true, obj };
       for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
           const element = obj[key];
-          const res = spec[key].validate(element, current);
+          const res = spec[key].validate(element);
           if (!res.valid) {
             const errors = _.map(res.errors, (e) => `key ${key}: ${e}`);
             result = {

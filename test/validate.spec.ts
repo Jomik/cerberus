@@ -6,7 +6,7 @@ import { Schema } from "../src/schemas/any";
 import { NumberSchema } from "../src/schemas/number";
 
 describe("primitives", () => {
-  describe("#validates", () => {
+  describe("validates", () => {
     it("any", () => {
       const spec = schema.any();
       const { valid } = validate(spec, {});
@@ -60,6 +60,24 @@ describe("primitives", () => {
         const { valid } = validate(spec, "foo");
         expect(valid).to.equal(true);
       });
+    });
+  });
+  describe("errors", () => {
+    it("shows error", () => {
+      const spec = schema.string();
+      const result: any = validate(spec, 1);
+      expect(result.valid).to.equal(false);
+      expect(result.errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("shows multiple errors", () => {
+      const spec = schema.string().length.exactly(3);
+      const result: any = validate(spec, 1);
+      expect(result.valid).to.equal(false);
+      expect(result.errors)
+        .to.be.an("array")
+        .of.length(2);
     });
   });
 });

@@ -27,7 +27,7 @@ export class StringLength<A extends string> {
   min(n: number): StringSchema<A> {
     return new StringSchema(
       test(
-        (obj, current) => this.schema.validate(obj, current) && obj.length >= n,
+        (obj) => this.schema.validate(obj) && obj.length >= n,
         (name) => `${name} is not larger than length ${n}`
       )
     );
@@ -35,17 +35,18 @@ export class StringLength<A extends string> {
   exactly(n: number): StringSchema<A> {
     return new StringSchema(
       test(
-        (obj, current) =>
-          this.schema.validate(obj, current) && obj.length === n,
-        (name) => `${name} is not of length ${n}`
+        (obj) => obj.length === n,
+        (name) => `${name} is not of length ${n}`,
+        this.schema
       )
     );
   }
   max(n: number): StringSchema<A> {
     return new StringSchema(
       test(
-        (obj, current) => this.schema.validate(obj, current) && obj.length <= n,
-        (name) => `${name} is not less than length ${n}`
+        (obj) => obj.length <= n,
+        (name) => `${name} is not less than length ${n}`,
+        this.schema
       )
     );
   }
