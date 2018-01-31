@@ -1,44 +1,26 @@
 import * as _ from "lodash";
-import { Schema } from "./schemas/any";
 import { SchemaResult, SchemaError, SchemaTest } from "./types";
+import { Schema } from "./schemas/schema";
 
-export function internalOr<A extends Schema, B extends Schema>(
-  schema1: A,
-  schema2: B,
-  _constructor: any
-) {
-  const ctor = schema2 instanceof _constructor ? _constructor : Schema;
-  return new ctor((obj: any, current: SchemaResult<any>) => {
-    const result1 = schema1.validate(obj);
-    if (result1.valid) {
-      return result1;
-    } else {
-      const result2 = schema2.validate(obj);
-      if (result2.valid) {
-        return result2;
-      }
-      return mergeResults(result1, result2);
-    }
-  });
-}
-
-export function test<A>(
-  f: (obj: any) => boolean,
-  error?: SchemaError,
+export function test<A extends B, B>(
+  f: (obj: A) => boolean,
+  error?: SchemaError<A>,
   schema?: Schema<A>
-): SchemaTest<A> {
+): SchemaTest<A, B> {
   return (obj) => {
     const prev: SchemaResult<A> =
       schema !== undefined ? schema.validate(obj) : { valid: true, obj };
-    return mergeResults(
-      prev,
-      f(obj)
-        ? { valid: true, obj }
-        : {
-            valid: false,
-            errors: error !== undefined ? [error(obj)] : []
-          }
-    );
+    const curr: SchemaResult<B> = f(prev.obj)
+      ? { valid: true, obj: prev.obj }
+      : {
+          valid: false,
+          obj: prev.obj,
+          errors: error !== undefined ? [error] : []
+        };
+    if (schema === undefined && !curr.valid) {
+      throw curr;
+    }
+    return mergeResults(prev, curr);
   };
 }
 
@@ -51,6 +33,10 @@ export function mergeResults<A>(
   } else if (result2.valid) {
     return result1;
   } else {
-    return { valid: false, errors: _.concat(result1.errors, result2.errors) };
+    return {
+      valid: false,
+      obj: result2.obj,
+      errors: _.concat(result1.errors, result2.errors)
+    };
   }
 }

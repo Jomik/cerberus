@@ -1,19 +1,14 @@
-import { test, mergeResults, internalOr } from "../utils";
-import { Schema } from "./any";
+import { test } from "../utils";
+import { AnySchema } from "./any";
+import { SchemaTest } from "../types";
 
-export class NumberSchema<A extends number> extends Schema<A> {
+export class NumberSchema<A extends number> extends AnySchema<A> {
   constructor(
-    validate = test<A>(
+    validate: SchemaTest<any, A> = test(
       (obj) => typeof obj === "number",
-      (name) => `${name} is not a number`
+      (obj) => `${obj} is not a number`
     )
   ) {
     super(validate);
-  }
-
-  or(other: NumberSchema<A>): NumberSchema<A>;
-  or<B extends number>(other: Schema<B>): Schema<A | B>;
-  or<B>(other: Schema<B>) {
-    return internalOr(this, other, NumberSchema as any);
   }
 }

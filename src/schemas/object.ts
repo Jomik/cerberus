@@ -1,36 +1,50 @@
 import * as _ from "lodash";
-import { test, mergeResults, internalOr } from "../utils";
-import { Schema } from "./any";
+import { test, mergeResults } from "../utils";
+import { AnySchema } from "./any";
 import { SchemaResult } from "../types";
+import { Schema } from "./schema";
 
 export type ObjectSpecification<A extends object> = {
   [k in keyof A]: Schema<A[k]>
 };
 
-export class ObjectSchema<A extends object> extends Schema<A> {
+export class ObjectSchema<A extends object> extends AnySchema<A> {
   constructor(spec: ObjectSpecification<A>) {
     super((obj) => {
+      let error = false;
       let result: SchemaResult<A> = { valid: true, obj };
-      for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
+      for (const key in spec) {
+        if (spec.hasOwnProperty(key)) {
           const element = obj[key];
-          const res = spec[key].validate(element);
-          if (!res.valid) {
-            const errors = _.map(res.errors, (e) => `key ${key}: ${e}`);
+          try {
+            const res = spec[key].validate(element);
+            if (!res.valid) {
+              const errors = _.map(res.errors, (e) => (n) =>
+                e(`${obj}.${key}`)
+              );
+              result = {
+                valid: false,
+                obj: element,
+                errors: result.valid ? errors : _.concat(result.errors, errors)
+              };
+            } else {
+              result.obj = _.merge({ [key]: res.obj }, result.obj);
+            }
+          } catch (res) {
+            error = true;
+            const errors = _.map(res.errors, (e) => (n) => e(`${n}.${key}`));
             result = {
               valid: false,
+              obj: element,
               errors: result.valid ? errors : _.concat(result.errors, errors)
             };
           }
         }
       }
+      if (error) {
+        throw result;
+      }
       return result;
     });
-  }
-
-  or<B extends object>(other: ObjectSchema<B>): ObjectSchema<A | B>;
-  or<B>(other: Schema<B>): Schema<A | B>;
-  or<B>(other: Schema<B>) {
-    return internalOr(this, other, ObjectSchema as any);
   }
 }

@@ -1,24 +1,19 @@
-import { test, mergeResults, internalOr } from "../utils";
-import { Schema } from "./any";
+import { test } from "../utils";
+import { AnySchema } from "./any";
+import { SchemaTest } from "../types";
 
-export class StringSchema<A extends string> extends Schema<A> {
+export class StringSchema<A extends string> extends AnySchema<A> {
   get length(): StringLength<A> {
     return new StringLength(this);
   }
 
   constructor(
-    validate = test<A>(
+    validate: SchemaTest<any, A> = test(
       (obj) => typeof obj === "string",
-      (name) => `${name} is not a string`
+      (obj) => `${obj} is not a string`
     )
   ) {
     super(validate);
-  }
-
-  or<B extends string>(other: StringSchema<B>): StringSchema<A | B>;
-  or<B>(other: Schema<B>): Schema<A | B>;
-  or<B>(other: Schema<B>) {
-    return internalOr(this, other, StringSchema as any);
   }
 }
 
@@ -27,16 +22,17 @@ export class StringLength<A extends string> {
   min(n: number): StringSchema<A> {
     return new StringSchema(
       test(
-        (obj) => this.schema.validate(obj) && obj.length >= n,
-        (name) => `${name} is not larger than length ${n}`
+        (obj) => obj.length >= n,
+        (obj) => `${obj} is not larger than length ${n}`,
+        this.schema
       )
     );
   }
-  exactly(n: number): StringSchema<A> {
+  exact(n: number): StringSchema<A> {
     return new StringSchema(
       test(
         (obj) => obj.length === n,
-        (name) => `${name} is not of length ${n}`,
+        (obj) => `${obj} is not of length ${n}`,
         this.schema
       )
     );
@@ -45,7 +41,7 @@ export class StringLength<A extends string> {
     return new StringSchema(
       test(
         (obj) => obj.length <= n,
-        (name) => `${name} is not less than length ${n}`,
+        (obj) => `${obj} is not less than length ${n}`,
         this.schema
       )
     );
