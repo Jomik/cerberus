@@ -1,14 +1,15 @@
-import { test } from "../utils";
 import { SchemaResult, SchemaTest } from "../types";
 import { Schema } from "./schema";
+import { valid, invalid, error } from "../utils";
+import { oneOf } from "../functions";
 
-export class AnySchema<A = any> extends Schema<A> {
+export class AnySchema extends Schema<any> {
   constructor(
-    validate: SchemaTest<any, A> = test(
-      (obj) => obj !== undefined,
-      (obj) => `${obj} can not be undefined`
-    )
+    validate: SchemaTest<any> = (obj) => {
+      return obj !== undefined ? valid(obj) : invalid(error`is undefined`);
+    }
   ) {
     super(validate);
   }
+  oneOf = oneOf;
 }

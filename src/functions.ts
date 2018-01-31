@@ -1,4 +1,5 @@
 import { Schema } from "./schemas/schema";
+import { test, error } from "./utils";
 
 export function oneOf<A extends string>(a: A, ...rest: A[]): Schema<A>;
 export function oneOf<A extends number>(a: A, ...rest: A[]): Schema<A>;
@@ -63,6 +64,21 @@ export function oneOf<A, B, C, D, E, F, G, H, I>(
 ): Schema<A | B | C | D | E | F | G | H | I>;
 
 export function oneOf(a: any, ...rest: any[]): Schema<any>;
-export function oneOf(...args) {
-  return new Schema(undefined as any);
+export function oneOf(...values) {
+  return new Schema(
+    test(
+      (obj) =>
+        values.some(
+          (val) =>
+            val === obj ||
+            (typeof val === "object" &&
+              Object.keys(obj).every((o) => Object.keys(val).includes(o)))
+        ),
+      error`is not one of ${
+        values.length > 1
+          ? `${values.slice(0, -1).join(", ")} or ${values.slice(-1)}`
+          : values[0]
+      }`
+    )
+  );
 }

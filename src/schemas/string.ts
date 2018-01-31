@@ -1,16 +1,16 @@
-import { test } from "../utils";
-import { AnySchema } from "./any";
+import { test, error } from "../utils";
+import { Schema } from "./schema";
 import { SchemaTest } from "../types";
 
-export class StringSchema<A extends string> extends AnySchema<A> {
+export class StringSchema<A extends string> extends Schema<A> {
   get length(): StringLength<A> {
-    return new StringLength(this);
+    return new StringLength(this.chain.bind(this));
   }
 
   constructor(
-    validate: SchemaTest<any, A> = test(
+    validate: SchemaTest<any> = test(
       (obj) => typeof obj === "string",
-      (obj) => `${obj} is not a string`
+      error`is not a string`
     )
   ) {
     super(validate);
@@ -18,32 +18,23 @@ export class StringSchema<A extends string> extends AnySchema<A> {
 }
 
 export class StringLength<A extends string> {
-  constructor(private schema: StringSchema<A>) {}
+  constructor(private chain) {}
   min(n: number): StringSchema<A> {
-    return new StringSchema(
-      test(
-        (obj) => obj.length >= n,
-        (obj) => `${obj} is not larger than length ${n}`,
-        this.schema
-      )
+    return this.chain(
+      test((obj) => obj.length >= n, error`is not larger than length ${n}`),
+      StringSchema
     );
   }
   exact(n: number): StringSchema<A> {
-    return new StringSchema(
-      test(
-        (obj) => obj.length === n,
-        (obj) => `${obj} is not of length ${n}`,
-        this.schema
-      )
+    return this.chain(
+      test((obj) => obj.length === n, error`is not of length ${n}`),
+      StringSchema
     );
   }
   max(n: number): StringSchema<A> {
-    return new StringSchema(
-      test(
-        (obj) => obj.length <= n,
-        (obj) => `${obj} is not less than length ${n}`,
-        this.schema
-      )
+    return this.chain(
+      test((obj) => obj.length <= n, error`is not less than length ${n}`),
+      StringSchema
     );
   }
 }

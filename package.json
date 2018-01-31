@@ -8,19 +8,15 @@
     "dist": "dist"
   },
   "scripts": {
-    "test": "mocha --opts mocha.opts --reporter list --exit test/**/*.spec.ts",
-    "test:watch": "mocha --opts mocha.opts --reporter list --watch test/**/*.spec.ts"
+    "test": "mocha --opts mocha.opts --reporter spec --exit test/**/*.spec.ts",
+    "test:watch":
+      "mocha --opts mocha.opts --reporter spec --watch test/**/*.spec.ts"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Jomik/object-validator.git"
   },
-  "keywords": [
-    "typescript",
-    "validate",
-    "validator",
-    "validation"
-  ],
+  "keywords": ["typescript", "validate", "validator", "validation"],
   "author": "Jonas Damtoft",
   "license": "MIT",
   "bugs": {
@@ -39,7 +35,5 @@
   "prettier": {
     "arrowParens": "always"
   },
-  "dependencies": {
-    "lodash": "^4.17.4"
-  }
+  "dependencies": {}
 }

@@ -1,26 +1,38 @@
-import * as _ from "lodash";
-import { SchemaResult, SchemaError, SchemaTest } from "./types";
+import {
+  SchemaResult,
+  SchemaError,
+  SchemaTest,
+  InvalidSchemaResult,
+  ValidSchemaResult
+} from "./types";
 import { Schema } from "./schemas/schema";
 
-export function test<A extends B, B>(
-  f: (obj: A) => boolean,
-  error?: SchemaError<A>,
-  schema?: Schema<A>
-): SchemaTest<A, B> {
+export function valid<A>(obj: any): ValidSchemaResult<A> {
+  return { valid: true, obj };
+}
+
+export function invalid(...errors: SchemaError[]): InvalidSchemaResult {
+  return { valid: false, errors };
+}
+
+export function error<A>(strings: TemplateStringsArray, ...keys: any[]) {
+  const result = keys.reduce(
+    (acc, val, index) => `${acc}${strings[index + 1]}${val}`,
+    strings[0]
+  );
+  return (element) => `${element} ${result}`;
+}
+
+export function path(key: string, e: (element: any) => string) {
+  return (element) => `${element}.${e(key)}`;
+}
+
+export function test<A>(
+  predicate: (obj: any) => boolean,
+  ...errors: SchemaError[]
+): SchemaTest<A> {
   return (obj) => {
-    const prev: SchemaResult<A> =
-      schema !== undefined ? schema.validate(obj) : { valid: true, obj };
-    const curr: SchemaResult<B> = f(prev.obj)
-      ? { valid: true, obj: prev.obj }
-      : {
-          valid: false,
-          obj: prev.obj,
-          errors: error !== undefined ? [error] : []
-        };
-    if (schema === undefined && !curr.valid) {
-      throw curr;
-    }
-    return mergeResults(prev, curr);
+    return predicate(obj) ? valid<A>(obj) : invalid(...errors);
   };
 }
 
@@ -35,8 +47,7 @@ export function mergeResults<A>(
   } else {
     return {
       valid: false,
-      obj: result2.obj,
-      errors: _.concat(result1.errors, result2.errors)
+      errors: result1.errors.concat(result2.errors)
     };
   }
 }

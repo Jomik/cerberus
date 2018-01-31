@@ -1,35 +1,28 @@
-import * as _ from "lodash";
 import { AnySchema } from "./schemas/any";
 import { StringSchema } from "./schemas/string";
 import { NumberSchema } from "./schemas/number";
-import { test } from "./utils";
 import { ObjectSchema, ObjectSpecification } from "./schemas/object";
-import { SchemaResult } from "./types";
 import { Schema } from "./schemas/schema";
 import { oneOf } from "./functions";
+import { invalid } from "./utils";
+import { SchemaResult, ValidationResult } from "./types";
 export * from "./functions";
+// tslint:disable:variable-name
 
-// tslint:disable-next-line:no-shadowed-variable
-export function validate<A>(
-  schema: Schema<A>,
-  obj: any,
-  name?: string
-): SchemaResult<A> {
-  let result;
-  try {
-    result = schema.validate(obj);
-  } catch (res) {
-    result = res;
-  }
-  if (!result.valid) {
-    const errors = _.map(result.errors, (e) => e(name || result.obj));
-    return {
-      valid: false,
-      obj: result.obj,
-      errors: errors
-    };
-  }
-  return result;
+export function validate<A>(schema: Schema<A>, obj: any): ValidationResult<A> {
+  const result = schema.validate(obj);
+  return result.valid
+    ? result
+    : {
+        valid: false,
+        errors: result.errors.map((e) =>
+          e(
+            obj !== null && typeof obj === "object" && !Array.isArray(obj)
+              ? "<root>"
+              : JSON.stringify(obj)
+          )
+        )
+      };
 }
 
 export const any = new AnySchema();

@@ -1,12 +1,12 @@
-import { test } from "../utils";
-import { AnySchema } from "./any";
+import { test, error } from "../utils";
+import { Schema } from "./schema";
 import { SchemaTest } from "../types";
 
-export class NumberSchema<A extends number> extends AnySchema<A> {
+export class NumberSchema<A extends number> extends Schema<A> {
   constructor(
-    validate: SchemaTest<any, A> = test(
+    validate: SchemaTest<A> = test(
       (obj) => typeof obj === "number",
-      (obj) => `${obj} is not a number`
+      error`is not a number`
     )
   ) {
     super(validate);
