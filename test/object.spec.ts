@@ -25,8 +25,8 @@ describe("object", () => {
       expect(valid).to.be.true;
     });
     it("optional", () => {
-      const spec = object({ a: any, b: any.optional() });
-      const { valid } = spec.validate({ a: 42 });
+      const spec = object({ b: any.optional() });
+      const { valid } = spec.validate({});
       expect(valid).to.be.true;
     });
     it("flat default", () => {
@@ -56,22 +56,32 @@ describe("object", () => {
     it("references", () => {
       const spec = object({
         a: number.default(20),
-        b: (o) => number.max(o.a)
+        b: (o) => number.lt(o.a)
       });
       const { valid } = spec.validate({
         b: 10
       });
       expect(valid).to.be.true;
     });
-    it("references nested", () => {
+    it("nested references out", () => {
       const spec = object({
         a: number.default(42),
         b: (o) =>
           object({
-            c: number.max(o.a)
+            c: number.lt(o.a)
           })
       });
       const { valid } = spec.validate({ b: { c: 10 } });
+      expect(valid).to.be.true;
+    });
+    it("nested references in", () => {
+      const spec = object({
+        a: (o) => number.lt(o.b.c),
+        b: object({
+          c: number.default(42)
+        })
+      });
+      const { valid } = spec.validate({ a: 10 });
       expect(valid).to.be.true;
     });
   });
@@ -113,6 +123,7 @@ describe("object", () => {
       it("<undefined>", () => {
         const spec = object({});
         const { valid, errors } = spec.validate(undefined) as InvalidResult;
+        const result = spec.validate(undefined);
         expect(valid).to.be.false;
         expect(errors)
           .to.be.an("array")
@@ -143,6 +154,24 @@ describe("object", () => {
       expect(errors[0])
         .to.be.a("string")
         .that.includes("[]");
+    });
+    it("objects", () => {
+      const spec = object({
+        a: any,
+        b: object({ foo: any, bar: any }),
+        c: any
+      });
+      const { valid, errors } = spec.validate({ c: "foo" }) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(2);
+      expect(errors[0])
+        .to.be.a("string")
+        .that.includes(".a");
+      expect(errors[1])
+        .to.be.a("string")
+        .that.includes(".b");
     });
   });
 });

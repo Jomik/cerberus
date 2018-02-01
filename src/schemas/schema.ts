@@ -16,9 +16,11 @@ export class Schema<A> {
     next,
     ctor: new (internalValidate: SchemaTest<A>) => B
   ): B {
-    return new ctor((obj, path) =>
-      mergeResults(this.internalValidate(obj, path), next(obj, path))
-    );
+    return new ctor((obj, path) => {
+      const result1 = this.internalValidate(obj, path);
+      const result2 = result1.valid ? next(result1.obj, path) : next(obj, path);
+      return mergeResults(result1, result2);
+    });
   }
 
   optional(): Schema<A | undefined> {

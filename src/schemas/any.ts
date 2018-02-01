@@ -13,5 +13,4 @@ export class AnySchema extends Schema<any> {
   ) {
     super(validate);
   }
-  oneOf = oneOf;
 }

@@ -19,21 +19,39 @@ export class StringSchema<A extends string> extends Schema<A> {
 
 export class StringLength<A extends string> {
   constructor(private chain) {}
-  min(n: number): StringSchema<A> {
+  gt(n: number): StringSchema<A> {
     return this.chain(
-      test((obj) => obj.length >= n, error`is not larger than length ${n}`),
+      test((obj) => obj.length > n, error`'s length is not greater than ${n}`),
       StringSchema
     );
   }
-  exact(n: number): StringSchema<A> {
+  ge(n: number): StringSchema<A> {
     return this.chain(
-      test((obj) => obj.length === n, error`is not of length ${n}`),
+      test(
+        (obj) => obj.length >= n,
+        error`'s length is not greater than or equal to ${n}`
+      ),
       StringSchema
     );
   }
-  max(n: number): StringSchema<A> {
+  eq(n: number): StringSchema<A> {
     return this.chain(
-      test((obj) => obj.length <= n, error`is not less than length ${n}`),
+      test((obj) => obj.length === n, error`'s length is not equal to ${n}`),
+      StringSchema
+    );
+  }
+  le(n: number): StringSchema<A> {
+    return this.chain(
+      test(
+        (obj) => obj.length <= n,
+        error`'s length is not less than or equal to ${n}`
+      ),
+      StringSchema
+    );
+  }
+  lt(n: number): StringSchema<A> {
+    return this.chain(
+      test((obj) => obj.length < n, error`'s length is not less than ${n}`),
       StringSchema
     );
   }

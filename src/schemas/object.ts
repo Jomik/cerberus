@@ -1,4 +1,4 @@
-import { test, mergeResults, invalid, error } from "../utils";
+import { test, invalid, error } from "../utils";
 import { Schema } from "./schema";
 import { ValidationResult } from "../types";
 
@@ -8,7 +8,7 @@ export type ObjectSpecification<A extends object> = {
 
 export class ObjectSchema<A extends object> extends Schema<A> {
   constructor(spec: ObjectSpecification<A>) {
-    super(function(testObj, path) {
+    super((testObj, path) => {
       if (
         testObj !== null &&
         typeof testObj === "object" &&
@@ -23,12 +23,11 @@ export class ObjectSchema<A extends object> extends Schema<A> {
         function updateObj(schema: ObjectSchema<A>, key, p) {
           const res = schema.internalValidate(obj[key], `${p}.${key}`);
           if (!res.valid) {
-            result = {
-              valid: false,
-              errors: result.valid
-                ? res.errors
-                : result.errors.concat(res.errors)
-            };
+            if (!result.valid) {
+              result.errors = result.errors.concat(res.errors);
+            } else {
+              result = res;
+            }
           } else if (result.valid) {
             obj[key] = res.obj;
           }
@@ -48,9 +47,13 @@ export class ObjectSchema<A extends object> extends Schema<A> {
         }
 
         return result;
-      } else {
-        return invalid(path, error`is not an object`);
+      } else if (testObj === undefined && Object.keys(spec).length > 0) {
+        const result = this.internalValidate({}, path);
+        if (result.valid) {
+          return result;
+        }
       }
+      return invalid(path, error`is not an object`);
     });
   }
 }

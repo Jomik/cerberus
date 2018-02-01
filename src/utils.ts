@@ -27,9 +27,7 @@ export function test<A>(
   ...errors: SchemaError[]
 ): SchemaTest<A> {
   return (obj, path) => {
-    return predicate(obj)
-      ? valid<A>(obj)
-      : invalid(`${path}.${obj}`, ...errors);
+    return predicate(obj) ? valid<A>(obj) : invalid(`${path}`, ...errors);
   };
 }
 
