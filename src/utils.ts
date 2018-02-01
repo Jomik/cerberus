@@ -1,18 +1,17 @@
 import {
-  SchemaResult,
   SchemaError,
   SchemaTest,
-  InvalidSchemaResult,
-  ValidSchemaResult
+  ValidationResult,
+  InvalidResult
 } from "./types";
 import { Schema } from "./schemas/schema";
+import { ValidResult } from "./types";
 
-export function valid<A>(obj: any): ValidSchemaResult<A> {
+export function valid<A>(obj: any): ValidResult<A> {
   return { valid: true, obj };
 }
-
-export function invalid(...errors: SchemaError[]): InvalidSchemaResult {
-  return { valid: false, errors };
+export function invalid(path: string, ...errors: SchemaError[]): InvalidResult {
+  return { valid: false, errors: errors.map((e) => e(path)) };
 }
 
 export function error<A>(strings: TemplateStringsArray, ...keys: any[]) {
@@ -23,23 +22,19 @@ export function error<A>(strings: TemplateStringsArray, ...keys: any[]) {
   return (element) => `${element} ${result}`;
 }
 
-export function path(key: string, e: (element: any) => string) {
-  return (element) => `${element}.${e(key)}`;
-}
-
 export function test<A>(
   predicate: (obj: any) => boolean,
   ...errors: SchemaError[]
 ): SchemaTest<A> {
-  return (obj) => {
-    return predicate(obj) ? valid<A>(obj) : invalid(...errors);
+  return (obj, path) => {
+    return predicate(obj) ? valid<A>(obj) : invalid(path, ...errors);
   };
 }
 
 export function mergeResults<A>(
-  result1: SchemaResult<A>,
-  result2: SchemaResult<A>
-): SchemaResult<A> {
+  result1: ValidationResult<A>,
+  result2: ValidationResult<A>
+): ValidationResult<A> {
   if (result1.valid) {
     return result2;
   } else if (result2.valid) {

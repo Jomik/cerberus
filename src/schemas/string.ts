@@ -8,12 +8,12 @@ export class StringSchema<A extends string> extends Schema<A> {
   }
 
   constructor(
-    validate: SchemaTest<any> = test(
+    internalValidate: SchemaTest<any> = test(
       (obj) => typeof obj === "string",
       error`is not a string`
     )
   ) {
-    super(validate);
+    super(internalValidate);
   }
 }
 

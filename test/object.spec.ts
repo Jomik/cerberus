@@ -26,7 +26,7 @@ describe("object", () => {
       expect(valid).to.be.true;
     });
     it("optional", () => {
-      const spec = schema.object({ a: schema.any, b: schema.any.optional });
+      const spec = schema.object({ a: schema.any, b: schema.any.optional() });
       const { valid } = validate(spec, { a: 42 });
       expect(valid).to.be.true;
     });

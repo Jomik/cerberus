@@ -3,26 +3,12 @@ import { StringSchema } from "./schemas/string";
 import { NumberSchema } from "./schemas/number";
 import { ObjectSchema, ObjectSpecification } from "./schemas/object";
 import { Schema } from "./schemas/schema";
-import { oneOf } from "./functions";
-import { invalid } from "./utils";
-import { SchemaResult, ValidationResult } from "./types";
+import { ValidationResult } from "./types";
 export * from "./functions";
 // tslint:disable:variable-name
 
 export function validate<A>(schema: Schema<A>, obj: any): ValidationResult<A> {
-  const result = schema.validate(obj);
-  return result.valid
-    ? result
-    : {
-        valid: false,
-        errors: result.errors.map((e) =>
-          e(
-            obj !== null && typeof obj === "object" && !Array.isArray(obj)
-              ? "<root>"
-              : JSON.stringify(obj)
-          )
-        )
-      };
+  return schema.validate(obj);
 }
 
 export const any = new AnySchema();

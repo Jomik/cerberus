@@ -13,7 +13,7 @@ describe("any", () => {
       expect(valid).to.be.true;
     });
     it("optional", () => {
-      const spec = schema.any.optional;
+      const spec = schema.any.optional();
       const { valid } = validate(spec, undefined);
       expect(valid).to.be.true;
     });
@@ -53,6 +53,7 @@ describe("any", () => {
         expect(valid2).to.be.true;
         const { valid: valid3 } = validate(spec, 3);
         expect(valid3).to.be.true;
+        spec.validate(2);
       });
       it("any", () => {
         const spec = schema.any.oneOf("foo", 42, { a: "bar" });
