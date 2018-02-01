@@ -11,4 +11,11 @@ export class NumberSchema<A extends number> extends Schema<A> {
   ) {
     super(validate);
   }
+
+  max(n: number): NumberSchema<A> {
+    return this.chain(
+      test((obj) => obj <= n, error`is not less than ${n}`),
+      NumberSchema
+    );
+  }
 }

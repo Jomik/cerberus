@@ -14,10 +14,10 @@ export class Schema<A> {
 
   protected chain<B extends Schema<A>>(
     next,
-    ctor?: new (validate: SchemaTest<A>) => B
-  ): Schema<A> {
-    return new (ctor || Schema)((obj, path) =>
-      mergeResults(this.internalValidate(obj, path), next(obj))
+    ctor: new (internalValidate: SchemaTest<A>) => B
+  ): B {
+    return new ctor((obj, path) =>
+      mergeResults(this.internalValidate(obj, path), next(obj, path))
     );
   }
 
