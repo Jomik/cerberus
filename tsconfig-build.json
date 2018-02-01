@@ -2,8 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "target": "es2017",
-    "module": "commonjs",
+    "moduleResolution": "node",
     "declaration": true,
+    "declarationDir": "./dist/defs",
     "outDir": "./dist",
     "rootDir": "./src"
   },
