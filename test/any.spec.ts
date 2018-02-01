@@ -43,6 +43,9 @@ describe("any", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
+      expect(errors[0].toString())
+        .to.be.a("string")
+        .that.includes("defined");
     });
   });
   describe("chains", () => {

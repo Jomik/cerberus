@@ -1,6 +1,7 @@
-import { test, invalid, error } from "../utils";
+import { test, invalid } from "../utils";
 import { Schema } from "./schema";
 import { ValidationResult } from "../types";
+import { TypeError } from "../errors";
 
 export type ObjectSpecification<A extends object> = {
   [k in keyof A]: Schema<A[k]> | ((obj: A[k]) => Schema<A[k]>)
@@ -20,9 +21,12 @@ export class ObjectSchema<A extends object> extends Schema<A> {
           obj
         };
 
-        function updateObj(schema: ObjectSchema<A>, key, p) {
-          const res = schema.internalValidate(obj[key], `${p}.${key}`);
+        function updateObj(schema: ObjectSchema<A>, key: string, p?: string) {
+          const res = schema.internalValidate(obj[key], key);
           if (!res.valid) {
+            if (p !== undefined) {
+              res.errors.forEach((e) => e.path.unshift(p));
+            }
             if (!result.valid) {
               result.errors = result.errors.concat(res.errors);
             } else {
@@ -53,7 +57,7 @@ export class ObjectSchema<A extends object> extends Schema<A> {
           return result;
         }
       }
-      return invalid(path, error`is not an object`);
+      return invalid(path, new TypeError(testObj, "object"));
     });
   }
 }

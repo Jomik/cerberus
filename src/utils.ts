@@ -1,33 +1,32 @@
-import {
-  SchemaError,
-  SchemaTest,
-  ValidationResult,
-  InvalidResult
-} from "./types";
+import { SchemaTest, ValidationResult, InvalidResult } from "./types";
 import { Schema } from "./schemas/schema";
 import { ValidResult } from "./types";
+import { ValidationError } from "./errors";
 
 export function valid<A>(obj: any): ValidResult<A> {
   return { valid: true, obj };
 }
-export function invalid(path: string, ...errors: SchemaError[]): InvalidResult {
-  return { valid: false, errors: errors.map((e) => e(path)) };
-}
-
-export function error<A>(strings: TemplateStringsArray, ...keys: any[]) {
-  const result = keys.reduce(
-    (acc, val, index) => `${acc}${strings[index + 1]}${val}`,
-    strings[0]
-  );
-  return (element) => `${element} ${result}`;
+export function invalid(
+  path?: string,
+  ...errors: ValidationError[]
+): InvalidResult {
+  if (path !== undefined) {
+    errors.forEach((e) => e.path.push(path));
+  }
+  return { valid: false, errors };
 }
 
 export function test<A>(
   predicate: (obj: any) => boolean,
-  ...errors: SchemaError[]
+  ...errors: ([new (obj: any, ...payload: any[]) => ValidationError, any])[]
 ): SchemaTest<A> {
   return (obj, path) => {
-    return predicate(obj) ? valid<A>(obj) : invalid(`${path}`, ...errors);
+    return predicate(obj)
+      ? valid<A>(obj)
+      : invalid(
+          path,
+          ...errors.map(([ctor, ...payload]) => new ctor(obj, ...payload))
+        );
   };
 }
 

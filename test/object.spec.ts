@@ -34,12 +34,12 @@ describe("object", () => {
         a: any.default(42),
         b: any.default("foo")
       });
-      const result = spec.validate({}) as ValidResult<{
+      const { valid, obj } = spec.validate({}) as ValidResult<{
         a: any;
         b: any;
       }>;
-      expect(result.valid).to.be.true;
-      expect(result.obj).to.deep.equal({ a: 42, b: "foo" });
+      expect(valid).to.be.true;
+      expect(obj).to.deep.equal({ a: 42, b: "foo" });
     });
     it("nested default", () => {
       const spec = object({
@@ -94,7 +94,7 @@ describe("object", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0])
+        expect(errors[0].toString())
           .to.be.a("string")
           .that.includes("foo");
       });
@@ -105,7 +105,7 @@ describe("object", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0])
+        expect(errors[0].toString())
           .to.be.a("string")
           .that.includes("42");
       });
@@ -116,7 +116,7 @@ describe("object", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0])
+        expect(errors[0].toString())
           .to.be.a("string")
           .that.includes("true");
       });
@@ -128,7 +128,7 @@ describe("object", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0])
+        expect(errors[0].toString())
           .to.be.a("string")
           .that.includes("undefined");
       });
@@ -139,7 +139,7 @@ describe("object", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0])
+        expect(errors[0].toString())
           .to.be.a("string")
           .that.includes("null");
       });
@@ -151,27 +151,63 @@ describe("object", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0])
+      expect(errors[0].toString())
         .to.be.a("string")
         .that.includes("[]");
     });
-    it("objects", () => {
+    it("undefined", () => {
+      const spec = object({
+        a: any
+      });
+      const { valid, errors } = spec.validate(undefined) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+      expect(errors[0].toString())
+        .to.be.a("string")
+        .that.includes("undefined");
+    });
+    it("wrong objects", () => {
       const spec = object({
         a: any,
         b: object({ foo: any, bar: any }),
         c: any
       });
-      const { valid, errors } = spec.validate({ c: "foo" }) as InvalidResult;
+      const { valid, errors } = spec.validate({
+        b: "foo",
+        c: "bar"
+      }) as InvalidResult;
       expect(valid).to.be.false;
       expect(errors)
         .to.be.an("array")
         .of.length(2);
-      expect(errors[0])
+      expect(errors[0].toString())
         .to.be.a("string")
-        .that.includes(".a");
-      expect(errors[1])
+        .to.include("a");
+      expect(errors[1].toString())
         .to.be.a("string")
-        .that.includes(".b");
+        .that.includes("b");
+    });
+    it("wrong nested objects", () => {
+      const spec = object({
+        a: object({ b: any }),
+        c: object({ d: number })
+      });
+      const { valid, errors } = spec.validate({
+        a: {},
+        c: { d: "foo" }
+      }) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(2);
+      expect(errors[0].toString())
+        .to.be.a("string")
+        .to.include("a.b");
+      expect(errors[1].toString())
+        .to.be.a("string")
+        .that.includes("c.d");
     });
   });
 });

@@ -1,8 +1,10 @@
 import "mocha";
 import { expect } from "chai";
-import { string } from "../src";
+import { string, number } from "../src";
 import { test } from "./utils";
 import { InvalidResult } from "../src/types";
+import { NumberComparisons } from "../src/schemas/schema";
+import { StringSchema } from "../src/schemas/string";
 // tslint:disable:no-unused-expression
 
 describe("string", () => {
@@ -22,7 +24,7 @@ describe("string", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0])
+        expect(errors[0].toString())
           .to.be.a("string")
           .that.includes("42");
       });
@@ -33,7 +35,7 @@ describe("string", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0])
+        expect(errors[0].toString())
           .to.be.a("string")
           .that.includes("true");
       });
@@ -45,7 +47,7 @@ describe("string", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0])
+        expect(errors[0].toString())
           .to.be.a("string")
           .that.includes("undefined");
       });
@@ -56,7 +58,7 @@ describe("string", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0])
+        expect(errors[0].toString())
           .to.be.a("string")
           .that.includes("null");
       });
@@ -68,7 +70,7 @@ describe("string", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0])
+      expect(errors[0].toString())
         .to.be.a("string")
         .that.includes("[]");
     });
@@ -79,6 +81,9 @@ describe("string", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
+      expect(errors[0].toString())
+        .to.be.a("string")
+        .that.includes("object");
     });
   });
   describe("has", () => {

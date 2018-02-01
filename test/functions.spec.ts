@@ -25,7 +25,7 @@ describe("oneOf", () => {
       expect(valid3).to.be.true;
       spec.validate(2);
     });
-    it("any", () => {
+    it("<any>", () => {
       const spec = oneOf("foo", 42, { a: "bar" });
       const { valid: valid1 } = spec.validate("foo");
       expect(valid1).to.be.true;
@@ -36,27 +36,27 @@ describe("oneOf", () => {
     });
   });
   describe("rejects", () => {
-    it("one", () => {
+    it("wrong with one option", () => {
       const spec = oneOf("foo");
       const { valid, errors } = spec.validate("bar") as InvalidResult;
       expect(valid).to.be.false;
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0])
+      expect(errors[0].toString())
         .to.be.a("string")
         .that.includes("bar");
     });
-    it("multiple", () => {
-      const spec = oneOf("foo", "bar");
-      const { valid, errors } = spec.validate("baz") as InvalidResult;
+    it("wrong with multiple options", () => {
+      const spec = oneOf("foo", "bar", "baz");
+      const { valid, errors } = spec.validate("buz") as InvalidResult;
       expect(valid).to.be.false;
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0])
+      expect(errors[0].toString())
         .to.be.a("string")
-        .that.includes("baz");
+        .that.includes("buz");
     });
   });
 });

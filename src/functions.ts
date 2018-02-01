@@ -1,6 +1,7 @@
 import * as equal from "fast-deep-equal";
 import { Schema } from "./schemas/schema";
-import { test, error } from "./utils";
+import { test } from "./utils";
+import { ValueError } from "./errors";
 
 export function oneOf<A extends string>(a: A, ...rest: A[]): Schema<A>;
 export function oneOf<A extends number>(a: A, ...rest: A[]): Schema<A>;
@@ -67,13 +68,6 @@ export function oneOf<A, B, C, D, E, F, G, H, I>(
 export function oneOf(a: any, ...rest: any[]): Schema<any>;
 export function oneOf(...values) {
   return new Schema(
-    test(
-      (obj) => values.some((val) => equal(val, obj)),
-      error`is not one of ${
-        values.length > 1
-          ? `${values.slice(0, -1).join(", ")} or ${values.slice(-1)}`
-          : values[0]
-      }`
-    )
+    test((obj) => values.some((val) => equal(val, obj)), [ValueError, values])
   );
 }

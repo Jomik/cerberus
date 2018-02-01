@@ -1,15 +1,12 @@
 import { SchemaTest, ValidationResult } from "../types";
-import { mergeResults, valid } from "../utils";
+import { mergeResults, valid, test } from "../utils";
+import { ConstraintError } from "../errors";
 
 export class Schema<A> {
   constructor(protected internalValidate: SchemaTest<A>) {}
 
   validate(obj: any): ValidationResult<A> {
-    const name =
-      obj !== null && typeof obj === "object" && !Array.isArray(obj)
-        ? "<root>"
-        : JSON.stringify(obj);
-    return this.internalValidate(obj, name);
+    return this.internalValidate(obj);
   }
 
   protected chain<B extends Schema<A>>(
