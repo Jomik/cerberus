@@ -1,6 +1,5 @@
 import { SchemaTest, ValidationResult } from "../types";
-import { mergeResults, valid, test } from "../utils";
-import { ConstraintError } from "../errors";
+import { mergeResults, valid } from "../utils";
 
 export class Schema<A> {
   constructor(protected internalValidate: SchemaTest<A>) {}
@@ -15,6 +14,9 @@ export class Schema<A> {
   ): B {
     return new ctor((obj, path) => {
       const result1 = this.internalValidate(obj, path);
+      if (!result1.valid && result1.errors.some((e) => e.fatal)) {
+        return result1;
+      }
       const result2 = result1.valid ? next(result1.obj, path) : next(obj, path);
       return mergeResults(result1, result2);
     });

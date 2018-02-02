@@ -1,4 +1,4 @@
-import { test, invalid } from "../utils";
+import { invalid } from "../utils";
 import { Schema } from "./schema";
 import { ValidationResult } from "../types";
 import { TypeError } from "../errors";

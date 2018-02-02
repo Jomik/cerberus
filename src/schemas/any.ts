@@ -1,7 +1,6 @@
 import { SchemaTest } from "../types";
 import { Schema } from "./schema";
 import { valid, invalid } from "../utils";
-import { oneOf } from "../functions";
 import { MissingError } from "../errors";
 
 export class AnySchema extends Schema<any> {

@@ -1,10 +1,7 @@
 import "mocha";
 import { expect } from "chai";
-import { string, number } from "../src";
-import { test } from "./utils";
+import { string } from "../src";
 import { InvalidResult } from "../src/types";
-import { NumberComparisons } from "../src/schemas/schema";
-import { StringSchema } from "../src/schemas/string";
 // tslint:disable:no-unused-expression
 
 describe("string", () => {
@@ -24,9 +21,6 @@ describe("string", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0].toString())
-          .to.be.a("string")
-          .that.includes("42");
       });
       it("<boolean>", () => {
         const spec = string;
@@ -35,9 +29,6 @@ describe("string", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0].toString())
-          .to.be.a("string")
-          .that.includes("true");
       });
       it("<undefined>", () => {
         const spec = string;
@@ -47,9 +38,6 @@ describe("string", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0].toString())
-          .to.be.a("string")
-          .that.includes("undefined");
       });
       it("<null>", () => {
         const spec = string;
@@ -58,9 +46,6 @@ describe("string", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0].toString())
-          .to.be.a("string")
-          .that.includes("null");
       });
     });
     it("arrays", () => {
@@ -70,9 +55,6 @@ describe("string", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0].toString())
-        .to.be.a("string")
-        .that.includes("[]");
     });
     it("objects", () => {
       const spec = string;
@@ -81,27 +63,65 @@ describe("string", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0].toString())
-        .to.be.a("string")
-        .that.includes("object");
     });
   });
   describe("has", () => {
     describe("length", () => {
       it("gt", () => {
-        test(string.length.gt(5), ["foobar"], ["foo"]);
+        const spec = string.length.gt(5);
+        const { valid } = spec.validate("foobar");
+        expect(valid).to.be.true;
+        const { valid: invalid, errors } = spec.validate(
+          "foo"
+        ) as InvalidResult;
+        expect(invalid).to.be.false;
+        expect(errors)
+          .to.be.an("array")
+          .of.length(1);
       });
       it("ge", () => {
-        test(string.length.ge(3), ["foo", "foobar"], ["f"]);
+        const spec = string.length.ge(3);
+        const { valid } = spec.validate("foo");
+        expect(valid).to.be.true;
+        const { valid: invalid, errors } = spec.validate("f") as InvalidResult;
+        expect(invalid).to.be.false;
+        expect(errors)
+          .to.be.an("array")
+          .of.length(1);
       });
       it("eq", () => {
-        test(string.length.eq(3), ["foo"], ["f", "foobar"]);
+        const spec = string.length.eq(3);
+        const { valid } = spec.validate("foo");
+        expect(valid).to.be.true;
+        const { valid: invalid, errors } = spec.validate("f") as InvalidResult;
+        expect(invalid).to.be.false;
+        expect(errors)
+          .to.be.an("array")
+          .of.length(1);
       });
       it("le", () => {
-        test(string.length.le(3), ["f", "foo"], ["foobar"]);
+        const spec = string.length.le(3);
+        const { valid } = spec.validate("foo");
+        expect(valid).to.be.true;
+        const { valid: invalid, errors } = spec.validate(
+          "foobar"
+        ) as InvalidResult;
+        expect(invalid).to.be.false;
+        expect(errors)
+          .to.be.an("array")
+          .of.length(1);
       });
       it("lt", () => {
-        test(string.length.lt(6), ["foo"], ["foobar"]);
+        const spec = string.length.lt(6);
+        const { valid } = spec.validate("foo");
+        expect(valid).to.be.true;
+        const { valid: invalid, errors } = spec.validate(
+          "foobar"
+        ) as InvalidResult;
+        expect(invalid).to.be.false;
+        expect(errors)
+          .to.be.an("array")
+          .of.length(1);
       });
     });
   });

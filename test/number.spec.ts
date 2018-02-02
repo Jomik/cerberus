@@ -1,7 +1,7 @@
 import "mocha";
 import { expect } from "chai";
 import { number } from "../src";
-import { test } from "./utils";
+import { InvalidResult } from "../src/types";
 // tslint:disable:no-unused-expression
 
 describe("number", () => {
@@ -15,19 +15,54 @@ describe("number", () => {
   describe("rejects", () => {});
   describe("has", () => {
     it("gt", () => {
-      test(number.gt(5), [6], [3]);
+      const spec = number.gt(5);
+      const { valid } = spec.validate(6);
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec.validate(5) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
     });
     it("ge", () => {
-      test(number.ge(3), [3, 6], [1]);
+      const spec = number.ge(3);
+      const { valid } = spec.validate(3);
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec.validate(2) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
     });
     it("eq", () => {
-      test(number.eq(3), [3], [1, 6]);
+      const spec = number.eq(3);
+      const { valid } = spec.validate(3);
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec.validate(2) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
     });
     it("le", () => {
-      test(number.le(3), [1, 3], [6]);
+      const spec = number.le(5);
+      const { valid } = spec.validate(5);
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec.validate(6) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
     });
     it("lt", () => {
-      test(number.lt(6), [3], [6]);
+      const spec = number.lt(6);
+      const { valid } = spec.validate(3);
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec.validate(6) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
     });
   });
 });

@@ -1,6 +1,9 @@
-import { SchemaTest, ValidationResult, InvalidResult } from "./types";
-import { Schema } from "./schemas/schema";
-import { ValidResult } from "./types";
+import {
+  SchemaTest,
+  ValidationResult,
+  InvalidResult,
+  ValidResult
+} from "./types";
 import { ValidationError } from "./errors";
 
 export function valid<A>(obj: any): ValidResult<A> {
@@ -18,14 +21,14 @@ export function invalid(
 
 export function test<A>(
   predicate: (obj: any) => boolean,
-  ...errors: ([new (obj: any, ...payload: any[]) => ValidationError, any])[]
+  ...errors: ([new (obj: any, payload: any) => ValidationError, any])[]
 ): SchemaTest<A> {
   return (obj, path) => {
     return predicate(obj)
       ? valid<A>(obj)
       : invalid(
           path,
-          ...errors.map(([ctor, ...payload]) => new ctor(obj, ...payload))
+          ...errors.map(([ctor, ...payload]) => new ctor(obj, payload))
         );
   };
 }
@@ -44,4 +47,11 @@ export function mergeResults<A>(
       errors: result1.errors.concat(result2.errors)
     };
   }
+}
+
+export function stringify(obj: any) {
+  if (obj !== null && typeof obj === "object") {
+    return Array.isArray(obj) ? "<array>" : "<object>";
+  }
+  return JSON.stringify(obj);
 }

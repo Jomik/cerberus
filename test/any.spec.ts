@@ -2,13 +2,14 @@ import "mocha";
 import { expect } from "chai";
 import { any, number } from "../src";
 import { InvalidResult, ValidResult } from "../src/types";
+import { validate } from "../src/index";
 // tslint:disable:no-unused-expression
 
 describe("any", () => {
   describe("accepts", () => {
     it("anything not undefined", () => {
       const spec = any;
-      const { valid } = spec.validate("foo");
+      const { valid } = validate(spec, "foo");
       expect(valid).to.be.true;
     });
     it("optional", () => {
@@ -18,7 +19,7 @@ describe("any", () => {
     });
     it("optional defined", () => {
       const spec = any.optional();
-      const { valid, obj } = spec.validate("foo") as ValidResult<"foo">;
+      const { valid, obj } = spec.validate("foo") as ValidResult<any>;
       expect(valid).to.be.true;
       expect(obj).to.equal("foo");
     });
@@ -43,31 +44,45 @@ describe("any", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0].toString())
-        .to.be.a("string")
-        .that.includes("defined");
     });
   });
   describe("chains", () => {
     it("fail > pass", () => {
       const spec = number.lt(3).ge(4);
-      const { valid } = spec.validate(4) as ValidResult<number>;
+      const { valid, errors } = spec.validate(4) as InvalidResult;
       expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
     });
     it("pass > fail", () => {
       const spec = number.ge(3).lt(4);
-      const { valid } = spec.validate(4) as ValidResult<number>;
+      const { valid, errors } = spec.validate(4) as InvalidResult;
       expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
     });
     it("pass > pass", () => {
       const spec = number.ge(3).le(4);
-      const { valid } = spec.validate(4) as ValidResult<number>;
+      const { valid } = spec.validate(4);
       expect(valid).to.be.true;
     });
     it("fail > fail", () => {
       const spec = number.le(3).lt(4);
-      const { valid } = spec.validate(5) as ValidResult<number>;
+      const { valid, errors } = spec.validate(5) as InvalidResult;
       expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(2);
+    });
+    it("stops on fatal", () => {
+      const spec = number.eq(5);
+      const { valid, errors } = spec.validate("foo") as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
     });
   });
 });

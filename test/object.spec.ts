@@ -94,9 +94,6 @@ describe("object", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0].toString())
-          .to.be.a("string")
-          .that.includes("foo");
       });
       it("<number>", () => {
         const spec = object({});
@@ -105,9 +102,6 @@ describe("object", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0].toString())
-          .to.be.a("string")
-          .that.includes("42");
       });
       it("<boolean>", () => {
         const spec = object({});
@@ -116,9 +110,6 @@ describe("object", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0].toString())
-          .to.be.a("string")
-          .that.includes("true");
       });
       it("<undefined>", () => {
         const spec = object({});
@@ -128,9 +119,6 @@ describe("object", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0].toString())
-          .to.be.a("string")
-          .that.includes("undefined");
       });
       it("<null>", () => {
         const spec = object({});
@@ -139,9 +127,6 @@ describe("object", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
-        expect(errors[0].toString())
-          .to.be.a("string")
-          .that.includes("null");
       });
     });
     it("arrays", () => {
@@ -151,9 +136,6 @@ describe("object", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0].toString())
-        .to.be.a("string")
-        .that.includes("[]");
     });
     it("undefined", () => {
       const spec = object({
@@ -164,9 +146,6 @@ describe("object", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0].toString())
-        .to.be.a("string")
-        .that.includes("undefined");
     });
     it("wrong objects", () => {
       const spec = object({
@@ -182,12 +161,6 @@ describe("object", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(2);
-      expect(errors[0].toString())
-        .to.be.a("string")
-        .to.include("a");
-      expect(errors[1].toString())
-        .to.be.a("string")
-        .that.includes("b");
     });
     it("wrong nested objects", () => {
       const spec = object({
@@ -202,12 +175,6 @@ describe("object", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(2);
-      expect(errors[0].toString())
-        .to.be.a("string")
-        .to.include("a.b");
-      expect(errors[1].toString())
-        .to.be.a("string")
-        .that.includes("c.d");
     });
   });
 });

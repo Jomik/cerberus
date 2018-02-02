@@ -1,7 +1,7 @@
 import "mocha";
 import { expect } from "chai";
 import { oneOf } from "../src";
-import { InvalidResult, ValidResult } from "../src/types";
+import { InvalidResult } from "../src/types";
 // tslint:disable:no-unused-expression
 
 describe("oneOf", () => {
@@ -43,9 +43,6 @@ describe("oneOf", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0].toString())
-        .to.be.a("string")
-        .that.includes("bar");
     });
     it("wrong with multiple options", () => {
       const spec = oneOf("foo", "bar", "baz");
@@ -54,9 +51,6 @@ describe("oneOf", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
-      expect(errors[0].toString())
-        .to.be.a("string")
-        .that.includes("buz");
     });
   });
 });
