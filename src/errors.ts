@@ -40,11 +40,7 @@ export class TypeError extends ValidationError {
 
 export class ConstraintError extends ValidationError {
   constructor(obj: any, public constraint: string, prop?: string) {
-    super(
-      obj,
-      `be ${constraint}`,
-      `${prop !== undefined ? `.${prop}` : undefined}`
-    );
+    super(obj, `${constraint}`, prop !== undefined ? `.${prop}` : undefined);
   }
 }
 

@@ -65,7 +65,7 @@ describe("string", () => {
         .of.length(1);
     });
   });
-  describe("has", () => {
+  describe("tests", () => {
     describe("length", () => {
       it("gt", () => {
         const spec = string.length.gt(5);
@@ -122,6 +122,18 @@ describe("string", () => {
         expect(errors)
           .to.be.an("array")
           .of.length(1);
+      });
+    });
+    describe("includes", () => {
+      it("accepts", () => {
+        const spec = string.includes("bar");
+        const { valid } = spec.validate("foo bar baz");
+        expect(valid).to.be.true;
+      });
+      it("rejects", () => {
+        const spec = string.includes("bar");
+        const { valid } = spec.validate("foo baz");
+        expect(valid).to.be.false;
       });
     });
   });

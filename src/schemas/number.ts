@@ -17,7 +17,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain(
       test((obj) => [
         obj > n,
-        () => [new ConstraintError(obj, `greater than ${n}`)]
+        () => [new ConstraintError(obj, `be greater than ${n}`)]
       ]),
       NumberSchema
     );
@@ -26,7 +26,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain(
       test((obj) => [
         obj >= n,
-        () => [new ConstraintError(obj, `greater than or equal to ${n}`)]
+        () => [new ConstraintError(obj, `be greater than or equal to ${n}`)]
       ]),
       NumberSchema
     );
@@ -35,7 +35,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain(
       test((obj) => [
         obj === n,
-        () => [new ConstraintError(obj, `equal to ${n}`)]
+        () => [new ConstraintError(obj, `be equal to ${n}`)]
       ]),
       NumberSchema
     );
@@ -44,7 +44,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain(
       test((obj) => [
         obj <= n,
-        () => [new ConstraintError(obj, `less than or equal to ${n}`)]
+        () => [new ConstraintError(obj, `be less than or equal to ${n}`)]
       ]),
       NumberSchema
     );
@@ -53,7 +53,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain(
       test((obj) => [
         obj < n,
-        () => [new ConstraintError(obj, `less than ${n}`)]
+        () => [new ConstraintError(obj, `be less than ${n}`)]
       ]),
       NumberSchema
     );

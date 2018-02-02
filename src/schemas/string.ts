@@ -16,6 +16,16 @@ export class StringSchema<A extends string> extends Schema<A> {
   ) {
     super(internalValidate);
   }
+
+  includes(str: string): StringSchema<A> {
+    return this.chain(
+      test((obj) => [
+        obj.includes(str),
+        () => [new ConstraintError(obj, `include ${str}`)]
+      ]),
+      StringSchema
+    );
+  }
 }
 
 export class StringLength<A extends string> {
@@ -24,7 +34,7 @@ export class StringLength<A extends string> {
     return this.chain(
       test((obj) => [
         obj.length > n,
-        () => [new ConstraintError(obj, `greater than ${n}`, "length")]
+        () => [new ConstraintError(obj, `be greater than ${n}`, "length")]
       ]),
       StringSchema
     );
@@ -34,7 +44,7 @@ export class StringLength<A extends string> {
       test((obj) => [
         obj.length >= n,
         () => [
-          new ConstraintError(obj, `greater than or equal to ${n}`, "length")
+          new ConstraintError(obj, `be greater than or equal to ${n}`, "length")
         ]
       ]),
       StringSchema
@@ -44,7 +54,7 @@ export class StringLength<A extends string> {
     return this.chain(
       test((obj) => [
         obj.length === n,
-        () => [new ConstraintError(obj, `equal to ${n}`, "length")]
+        () => [new ConstraintError(obj, `be equal to ${n}`, "length")]
       ]),
       StringSchema
     );
@@ -53,7 +63,9 @@ export class StringLength<A extends string> {
     return this.chain(
       test((obj) => [
         obj.length <= n,
-        () => [new ConstraintError(obj, `less than or equal to ${n}`, "length")]
+        () => [
+          new ConstraintError(obj, `be less than or equal to ${n}`, "length")
+        ]
       ]),
       StringSchema
     );
@@ -62,7 +74,7 @@ export class StringLength<A extends string> {
     return this.chain(
       test((obj) => [
         obj.length < n,
-        () => [new ConstraintError(obj, `less than ${n}`, "length")]
+        () => [new ConstraintError(obj, `be less than ${n}`, "length")]
       ]),
       StringSchema
     );
