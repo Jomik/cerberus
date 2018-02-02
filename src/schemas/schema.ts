@@ -1,6 +1,11 @@
 import { SchemaTest, ValidationResult } from "../types";
 import { mergeResults, valid } from "../utils";
 
+export type ChainMethod<A, B extends Schema<A>> = (
+  next: SchemaTest<A>,
+  ctor: new (internalValidate: SchemaTest<A>) => B
+) => B;
+
 export class Schema<A> {
   constructor(protected internalValidate: SchemaTest<A>) {}
 
@@ -9,7 +14,7 @@ export class Schema<A> {
   }
 
   protected chain<B extends Schema<A>>(
-    next,
+    next: SchemaTest<A>,
     ctor: new (internalValidate: SchemaTest<A>) => B
   ): B {
     return new ctor((obj, path) => {

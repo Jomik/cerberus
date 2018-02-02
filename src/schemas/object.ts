@@ -4,7 +4,7 @@ import { ValidationResult } from "../types";
 import { TypeError } from "../errors";
 
 export type ObjectSpecification<A extends object> = {
-  [k in keyof A]: Schema<A[k]> | ((obj: A[k]) => Schema<A[k]>)
+  [k in keyof A]: Schema<A[k]> | ((obj: A) => Schema<A[k]>)
 };
 
 export class ObjectSchema<A extends object> extends Schema<A> {

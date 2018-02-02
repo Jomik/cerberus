@@ -1,5 +1,5 @@
 import { test } from "../utils";
-import { Schema } from "./schema";
+import { Schema, ChainMethod } from "./schema";
 import { SchemaTest } from "../types";
 import { TypeError, ConstraintError } from "../errors";
 
@@ -19,13 +19,12 @@ export class StringSchema<A extends string> extends Schema<A> {
 }
 
 export class StringLength<A extends string> {
-  constructor(private chain) {}
+  constructor(private chain: ChainMethod<A, StringSchema<A>>) {}
   gt(n: number): StringSchema<A> {
     return this.chain(
       test((obj) => obj.length > n, [
         ConstraintError,
-        `greater than ${n}`,
-        "length"
+        [`greater than ${n}`, "length"]
       ]),
       StringSchema
     );
@@ -34,8 +33,7 @@ export class StringLength<A extends string> {
     return this.chain(
       test((obj) => obj.length >= n, [
         ConstraintError,
-        `greater than or equal to ${n}`,
-        "length"
+        [`greater than or equal to ${n}`, "length"]
       ]),
       StringSchema
     );
@@ -44,8 +42,7 @@ export class StringLength<A extends string> {
     return this.chain(
       test((obj) => obj.length === n, [
         ConstraintError,
-        `equal to ${n}`,
-        "length"
+        [`equal to ${n}`, "length"]
       ]),
       StringSchema
     );
@@ -54,8 +51,7 @@ export class StringLength<A extends string> {
     return this.chain(
       test((obj) => obj.length <= n, [
         ConstraintError,
-        `less than or equal to ${n}`,
-        "length"
+        [`less than or equal to ${n}`, "length"]
       ]),
       StringSchema
     );
@@ -64,8 +60,7 @@ export class StringLength<A extends string> {
     return this.chain(
       test((obj) => obj.length < n, [
         ConstraintError,
-        `less than ${n}`,
-        "length"
+        [`less than ${n}`, "length"]
       ]),
       StringSchema
     );

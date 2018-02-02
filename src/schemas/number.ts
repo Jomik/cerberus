@@ -12,6 +12,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
   ) {
     super(validate);
   }
+
   gt(n: number): NumberSchema<A> {
     return this.chain(
       test((obj) => obj > n, [ConstraintError, `greater than ${n}`]),
