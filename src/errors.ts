@@ -1,5 +1,10 @@
 import { stringify } from "./utils";
 
+export type ValidationErrorConstructor = new (
+  obj: any,
+  payload: any
+) => ValidationError;
+
 export class ValidationError {
   get name(): string {
     return this.constructor.name;

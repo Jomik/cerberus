@@ -4,7 +4,7 @@ import {
   InvalidResult,
   ValidResult
 } from "./types";
-import { ValidationError } from "./errors";
+import { ValidationError, ValidationErrorConstructor } from "./errors";
 
 export function valid<A>(obj: any): ValidResult<A> {
   return { valid: true, obj };
@@ -21,7 +21,7 @@ export function invalid(
 
 export function test<A>(
   predicate: (obj: A) => boolean,
-  ...errors: ([new (obj: any, payload: any) => ValidationError, any])[]
+  ...errors: ([ValidationErrorConstructor, any])[]
 ): SchemaTest<A> {
   return (obj, path) => {
     return predicate(obj)
