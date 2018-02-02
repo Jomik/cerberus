@@ -20,16 +20,11 @@ export function invalid(
 }
 
 export function test<A>(
-  predicate: (obj: A) => boolean,
-  ...errors: ([ValidationErrorConstructor, any])[]
+  resultFunc: (obj: A) => [boolean, () => ValidationError[]]
 ): SchemaTest<A> {
   return (obj, path) => {
-    return predicate(obj)
-      ? valid<A>(obj)
-      : invalid(
-          path,
-          ...errors.map(([ctor, payload]) => new ctor(obj, payload))
-        );
+    const [result, errors] = resultFunc(obj);
+    return result ? valid<A>(obj) : invalid(path, ...errors());
   };
 }
 

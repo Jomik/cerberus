@@ -1,9 +1,6 @@
 import { stringify } from "./utils";
 
-export type ValidationErrorConstructor = new (
-  obj: any,
-  payload: any
-) => ValidationError;
+export type ValidationErrorConstructor = (obj) => ValidationError;
 
 export class ValidationError {
   get name(): string {
@@ -45,7 +42,7 @@ export class ConstraintError extends ValidationError {
   constructor(obj: any, public constraint: string, prop?: string) {
     super(
       obj,
-      `satisfy constraint ${constraint}`,
+      `be ${constraint}`,
       `${prop !== undefined ? `.${prop}` : undefined}`
     );
   }

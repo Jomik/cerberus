@@ -66,8 +66,11 @@ export function oneOf<A, B, C, D, E, F, G, H, I>(
 ): Schema<A | B | C | D | E | F | G | H | I>;
 
 export function oneOf(a: any, ...rest: any[]): Schema<any>;
-export function oneOf(...values) {
-  return new Schema(
-    test((obj) => values.some((val) => equal(val, obj)), [ValueError, values])
+export function oneOf(...values: any[]) {
+  return new Schema<any>(
+    test((obj) => [
+      values.some((val) => equal(val, obj)),
+      () => [new ValueError(obj, values)]
+    ])
   );
 }

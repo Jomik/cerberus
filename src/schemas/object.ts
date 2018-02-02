@@ -52,7 +52,7 @@ export class ObjectSchema<A extends object> extends Schema<A> {
 
         return result;
       } else if (testObj === undefined && Object.keys(spec).length > 0) {
-        const result = this.internalValidate({}, path);
+        const result = this.internalValidate({} as any, path);
         if (result.valid) {
           return result;
         }
