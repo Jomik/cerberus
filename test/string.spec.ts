@@ -2,7 +2,7 @@ import "mocha";
 import { expect } from "chai";
 import { string } from "../src";
 import { InvalidResult } from "../src/types";
-import { NumericProperty } from "../src/constraints/numericproperty";
+import { NumericProperty } from "../src/constraints/property";
 // tslint:disable:no-unused-expression
 
 describe("string", () => {

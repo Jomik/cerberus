@@ -14,7 +14,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
   }
 
   gt(n: number): NumberSchema<A> {
-    return this.chain(
+    return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj > n,
         () => [new ConstraintError(obj, `be greater than ${n}`)]
@@ -23,7 +23,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     );
   }
   ge(n: number): NumberSchema<A> {
-    return this.chain(
+    return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj >= n,
         () => [new ConstraintError(obj, `be greater than or equal to ${n}`)]
@@ -32,7 +32,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     );
   }
   eq(n: number): NumberSchema<A> {
-    return this.chain(
+    return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj === n,
         () => [new ConstraintError(obj, `be equal to ${n}`)]
@@ -41,7 +41,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     );
   }
   le(n: number): NumberSchema<A> {
-    return this.chain(
+    return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj <= n,
         () => [new ConstraintError(obj, `be less than or equal to ${n}`)]
@@ -50,7 +50,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     );
   }
   lt(n: number): NumberSchema<A> {
-    return this.chain(
+    return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj < n,
         () => [new ConstraintError(obj, `be less than ${n}`)]
@@ -59,7 +59,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     );
   }
   between(low: number, high: number): NumberSchema<A> {
-    return this.chain(
+    return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj >= low && obj <= high,
         () => [new ConstraintError(obj, `be between ${low} and ${high}`)]

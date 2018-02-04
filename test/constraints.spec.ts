@@ -1,7 +1,7 @@
 import "mocha";
 import { expect } from "chai";
 import { InvalidResult } from "../src/types";
-import { NumericProperty } from "../src/constraints/numericproperty";
+import { NumericProperty } from "../src/constraints/property";
 import { string } from "../src/index";
 import { StringSchema } from "../src/schemas/string";
 // tslint:disable:no-unused-expression

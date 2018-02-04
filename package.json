@@ -10,24 +10,21 @@
   },
   "scripts": {
     "build": "npm run build:es2015; npm run build:cmjs",
-    "build:es2015": "tsc -P ./tsconfig-build.json --outDir 'dist/es' --target es2015 --module es2015",
+    "build:es2015":
+      "tsc -P ./tsconfig-build.json --outDir 'dist/es' --target es2015 --module es2015",
     "build:cmjs": "tsc -P ./tsconfig-build.json",
     "clean": "rm -rf dist coverage .nyc_output",
     "format": "prettier --write \"{src,test}/**/*.ts\"",
     "test": "nyc mocha --timeout 5000 --recursive test/**/*.spec.ts",
-    "test:watch": "mocha --require ts-node/register --watch-extensions ts --reporter spec --watch test/**/*.spec.ts",
+    "test:watch":
+      "mocha --require ts-node/register --watch-extensions ts --reporter spec --watch test/**/*.spec.ts",
     "codecov": "codecov -f coverage/coverage-final.json"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Jomik/object-validator.git"
   },
-  "keywords": [
-    "typescript",
-    "validate",
-    "validator",
-    "validation"
-  ],
+  "keywords": ["typescript", "validate", "validator", "validation"],
   "author": "Jonas Damtoft",
   "license": "MIT",
   "bugs": {
@@ -51,19 +48,9 @@
     "arrowParens": "always"
   },
   "nyc": {
-    "extension": [
-      ".ts"
-    ],
-    "require": [
-      "ts-node/register",
-      "source-map-support/register"
-    ],
-    "reporter": [
-      "json",
-      "html",
-      "text",
-      "lcov"
-    ]
+    "extension": [".ts"],
+    "require": ["ts-node/register", "source-map-support/register"],
+    "reporter": ["json", "html", "text", "lcov"]
   },
   "dependencies": {
     "fast-deep-equal": "^1.0.0"

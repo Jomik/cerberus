@@ -7,6 +7,17 @@ export type ObjectSpecification<A extends object> = {
   [k in keyof A]: Schema<A[k]> | ((obj: A) => Schema<A[k]>)
 };
 
+function isReference<A, B extends Schema<A>>(
+  schema: B | ((obj: any) => B)
+): schema is ((obj: any) => B) {
+  return typeof schema === "function";
+}
+function notReference<A, B extends Schema<A>>(
+  schema: B | ((obj: any) => B)
+): schema is B {
+  return typeof schema !== "function";
+}
+
 export class ObjectSchema<A extends object> extends Schema<A> {
   constructor(spec: ObjectSpecification<A>) {
     super((testObj, path) => {
@@ -21,8 +32,8 @@ export class ObjectSchema<A extends object> extends Schema<A> {
           obj
         };
 
-        function updateObj(schema: ObjectSchema<A>, key: string, p?: string) {
-          const res = schema.internalValidate(obj[key], key);
+        function updateObj<B>(schema: Schema<B>, key: string, p?: string) {
+          const res = (schema as any).internalValidate(obj[key], key);
           if (!res.valid) {
             if (p !== undefined) {
               res.errors.forEach((e) => e.path.unshift(p));
@@ -36,17 +47,25 @@ export class ObjectSchema<A extends object> extends Schema<A> {
             obj[key] = res.obj;
           }
         }
+
         for (const key in spec) {
-          if (spec.hasOwnProperty(key) && typeof spec[key] !== "function") {
-            const schema = spec[key] as ObjectSchema<A>;
-            updateObj(schema, key, path);
+          /* istanbul ignore else */
+          if (spec.hasOwnProperty(key)) {
+            const schema = spec[key];
+            if (notReference<A[keyof A], Schema<A[keyof A]>>(schema)) {
+              updateObj(schema, key, path);
+            }
           }
         }
 
         for (const key in spec) {
-          if (spec.hasOwnProperty(key) && typeof spec[key] === "function") {
-            const schema = (spec[key] as (o) => ObjectSchema<A>)(obj);
-            updateObj(schema, key, path);
+          /* istanbul ignore else */
+          if (spec.hasOwnProperty(key)) {
+            const schemaFunc = spec[key];
+            if (isReference<A[keyof A], Schema<A[keyof A]>>(schemaFunc)) {
+              const schema = schemaFunc(obj);
+              updateObj(schema, key, path);
+            }
           }
         }
 

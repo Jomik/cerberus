@@ -2,7 +2,6 @@ import { ChainMethod, SchemaConstructor } from "../types";
 import { ConstraintError } from "../errors";
 import { Schema } from "../schemas/base";
 import { test } from "../utils";
-
 export class NumericProperty<A, B extends Schema<A>> {
   constructor(
     private prop: string,
