@@ -6,9 +6,10 @@ Experimental, work in progress.
 [![codecov](https://codecov.io/gh/jomik/object-validator/branch/master/graph/badge.svg)](https://codecov.io/gh/jomik/object-validator)
 [![Greenkeeper badge](https://badges.greenkeeper.io/Jomik/object-validator.svg)](https://greenkeeper.io/)
 
-A simple example of the use. We can import the schema `types` to match the types of Typescript.
+Here is a basic example.
 
 ```ts
+// We can import the schema `types` to match the types of Typescript.
 import { object, any, string, number } from "...";
 // Create our schema
 const schema = object({
