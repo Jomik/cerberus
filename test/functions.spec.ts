@@ -2,6 +2,7 @@ import "mocha";
 import { expect } from "chai";
 import { oneOf } from "../src";
 import { InvalidResult } from "../src/types";
+import { is } from "../src/functions";
 // tslint:disable:no-unused-expression
 
 describe("oneOf", () => {
@@ -26,13 +27,18 @@ describe("oneOf", () => {
       spec.validate(2);
     });
     it("<any>", () => {
-      const spec = oneOf("foo", 42, { a: "bar" });
+      const spec = oneOf("foo", 42, { a: "bar", b: { c: "foo" } }, [
+        "bum",
+        ["foo"]
+      ]);
       const { valid: valid1 } = spec.validate("foo");
       expect(valid1).to.be.true;
       const { valid: valid2 } = spec.validate(42);
       expect(valid2).to.be.true;
-      const { valid: valid3 } = spec.validate({ a: "bar" });
+      const { valid: valid3 } = spec.validate({ a: "bar", b: { c: "foo" } });
       expect(valid3).to.be.true;
+      const { valid: valid4 } = spec.validate(["bum", ["foo"]]);
+      expect(valid4).to.be.true;
     });
   });
   describe("rejects", () => {
@@ -47,6 +53,70 @@ describe("oneOf", () => {
     it("wrong with multiple options", () => {
       const spec = oneOf("foo", "bar", "baz");
       const { valid, errors } = spec.validate("buz") as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+  });
+});
+
+describe("is", () => {
+  describe("accepts", () => {
+    it("<string>", () => {
+      const spec = is("foo");
+      const { valid } = spec.validate("foo");
+      expect(valid).to.be.true;
+    });
+    it("<number>", () => {
+      const spec = is(42);
+      const { valid } = spec.validate(42);
+      expect(valid).to.be.true;
+    });
+    it("<boolean>", () => {
+      const spec = is(false);
+      const { valid } = spec.validate(false);
+      expect(valid).to.be.true;
+    });
+    it("<array>", () => {
+      const spec = is(["foo", ["bar"]]);
+      const { valid } = spec.validate(["foo", ["bar"]]);
+      expect(valid).to.be.true;
+    });
+    it("<object>", () => {
+      const spec = is({ a: "bar", b: { c: "foo" } });
+      const { valid } = spec.validate({ a: "bar", b: { c: "foo" } });
+      expect(valid).to.be.true;
+    });
+  });
+  describe("rejects", () => {
+    it("wrong", () => {
+      const spec = is("foo");
+      const { valid, errors } = spec.validate("buz") as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("wrong type", () => {
+      const spec = is("foo");
+      const { valid, errors } = spec.validate(42) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("array with object spec", () => {
+      const spec = is({ a: "foo" });
+      const { valid, errors } = spec.validate(["foo"]) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("object with array spec", () => {
+      const spec = is(["foo"]);
+      const { valid, errors } = spec.validate({ a: "foo" }) as InvalidResult;
       expect(valid).to.be.false;
       expect(errors)
         .to.be.an("array")
