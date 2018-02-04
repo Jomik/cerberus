@@ -86,48 +86,46 @@ describe("object", () => {
     });
   });
   describe("rejects", () => {
-    describe("primitives", () => {
-      it("<string>", () => {
-        const spec = object({});
-        const { valid, errors } = spec.validate("foo") as InvalidResult;
-        expect(valid).to.be.false;
-        expect(errors)
-          .to.be.an("array")
-          .of.length(1);
-      });
-      it("<number>", () => {
-        const spec = object({});
-        const { valid, errors } = spec.validate(42) as InvalidResult;
-        expect(valid).to.be.false;
-        expect(errors)
-          .to.be.an("array")
-          .of.length(1);
-      });
-      it("<boolean>", () => {
-        const spec = object({});
-        const { valid, errors } = spec.validate(true) as InvalidResult;
-        expect(valid).to.be.false;
-        expect(errors)
-          .to.be.an("array")
-          .of.length(1);
-      });
-      it("<undefined>", () => {
-        const spec = object({});
-        const { valid, errors } = spec.validate(undefined) as InvalidResult;
-        const result = spec.validate(undefined);
-        expect(valid).to.be.false;
-        expect(errors)
-          .to.be.an("array")
-          .of.length(1);
-      });
-      it("<null>", () => {
-        const spec = object({});
-        const { valid, errors } = spec.validate(null) as InvalidResult;
-        expect(valid).to.be.false;
-        expect(errors)
-          .to.be.an("array")
-          .of.length(1);
-      });
+    it("<string>", () => {
+      const spec = object({});
+      const { valid, errors } = spec.validate("foo") as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("<number>", () => {
+      const spec = object({});
+      const { valid, errors } = spec.validate(42) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("<boolean>", () => {
+      const spec = object({});
+      const { valid, errors } = spec.validate(true) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("<undefined>", () => {
+      const spec = object({});
+      const { valid, errors } = spec.validate(undefined) as InvalidResult;
+      const result = spec.validate(undefined);
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("<null>", () => {
+      const spec = object({});
+      const { valid, errors } = spec.validate(null) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
     });
     it("arrays", () => {
       const spec = object({});

@@ -1,8 +1,7 @@
 import "mocha";
 import { expect } from "chai";
-import { oneOf } from "../src";
+import { oneOf, is } from "../src";
 import { InvalidResult } from "../src/types";
-import { is } from "../src/functions";
 // tslint:disable:no-unused-expression
 
 describe("oneOf", () => {

@@ -58,4 +58,13 @@ export class NumberSchema<A extends number> extends Schema<A> {
       NumberSchema
     );
   }
+  between(low: number, high: number): NumberSchema<A> {
+    return this.chain(
+      test((obj) => [
+        obj >= low && obj <= high,
+        () => [new ConstraintError(obj, `be between ${low} and ${high}`)]
+      ]),
+      NumberSchema
+    );
+  }
 }

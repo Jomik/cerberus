@@ -64,5 +64,15 @@ describe("number", () => {
         .to.be.an("array")
         .of.length(1);
     });
+    it("between", () => {
+      const spec = number.between(3, 10);
+      const { valid } = spec.validate(3);
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec.validate(42) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
   });
 });
