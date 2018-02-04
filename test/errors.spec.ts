@@ -42,6 +42,14 @@ describe("errors", () => {
         error.path = ["a", "b"];
         expect(error.toString()).to.include("a.b");
       });
+      it("shows index", () => {
+        error.path = [1, 2];
+        expect(error.toString()).to.include("[1][2]");
+      });
+      it("shows path and index", () => {
+        error.path = ["a", 1, "b", 2];
+        expect(error.toString()).to.include("a[1].b[2]");
+      });
       it("shows suffix", () => {
         expect(new ValidationError("foo", "", ".length").toString()).to.include(
           ".length"

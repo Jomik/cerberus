@@ -6,7 +6,7 @@ export class ValidationError {
   get name(): string {
     return this.constructor.name;
   }
-  path: string[] = [];
+  path: (string | number)[] = [];
   fatal: boolean = false;
 
   constructor(
@@ -19,7 +19,13 @@ export class ValidationError {
     const what =
       stringify(this.obj) + (this.suffix !== undefined ? this.suffix : "");
     const prefix =
-      this.path.length > 0 ? `${this.path.join(".")} is ${what} but` : what;
+      this.path.length > 0
+        ? `${this.path.reduce(
+            (acc, cur) =>
+              `${acc}${typeof cur === "number" ? `[${cur}]` : `.${cur}`}`,
+            ""
+          )} is ${what} but`
+        : what;
     return `${prefix} must ${this.message}`;
   }
 }

@@ -4,6 +4,7 @@ import { NumberSchema } from "./schemas/number";
 import { ObjectSchema, ObjectSpecification } from "./schemas/object";
 import { Schema } from "./schemas/base";
 import { ValidationResult } from "./types";
+import { ArraySchema } from "./schemas/array";
 export * from "./functions";
 // tslint:disable:variable-name
 
@@ -14,6 +15,10 @@ export function validate<A>(schema: Schema<A>, obj: any): ValidationResult<A> {
 export const any = new AnySchema();
 export const string = new StringSchema();
 export const number = new NumberSchema();
+
+export function array<A>(schema: Schema<A>) {
+  return new ArraySchema(schema);
+}
 export function object<A extends object>(
   specification: ObjectSpecification<A>
 ) {
