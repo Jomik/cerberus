@@ -1,6 +1,6 @@
 import { test } from "../utils";
-import { Schema, ChainMethod } from "./schema";
-import { SchemaTest } from "../types";
+import { Schema } from "./base";
+import { SchemaTest, ChainMethod } from "../types";
 import { TypeError, ConstraintError } from "../errors";
 
 export class StringSchema<A extends string> extends Schema<A> {

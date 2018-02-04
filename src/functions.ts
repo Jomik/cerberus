@@ -1,7 +1,7 @@
 import * as equal from "fast-deep-equal";
-import { Schema } from "./schemas/schema";
+import { Schema } from "./schemas/base";
 import { test } from "./utils";
-import { ValueError } from "./errors";
+import { ValueError, MissingError } from "./errors";
 
 export function oneOf<A extends string>(a: A, ...rest: A[]): Schema<A>;
 export function oneOf<A extends number>(a: A, ...rest: A[]): Schema<A>;

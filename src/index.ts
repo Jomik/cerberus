@@ -2,7 +2,7 @@ import { AnySchema } from "./schemas/any";
 import { StringSchema } from "./schemas/string";
 import { NumberSchema } from "./schemas/number";
 import { ObjectSchema, ObjectSpecification } from "./schemas/object";
-import { Schema } from "./schemas/schema";
+import { Schema } from "./schemas/base";
 import { ValidationResult } from "./types";
 export * from "./functions";
 // tslint:disable:variable-name

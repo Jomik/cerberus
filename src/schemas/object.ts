@@ -1,5 +1,5 @@
 import { invalid } from "../utils";
-import { Schema } from "./schema";
+import { Schema } from "./base";
 import { ValidationResult } from "../types";
 import { TypeError } from "../errors";
 

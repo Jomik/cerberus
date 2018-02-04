@@ -1,5 +1,5 @@
 import { test } from "../utils";
-import { Schema } from "./schema";
+import { Schema } from "./base";
 import { SchemaTest } from "../types";
 import { TypeError, ConstraintError } from "../errors";
 

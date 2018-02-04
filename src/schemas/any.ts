@@ -1,5 +1,5 @@
 import { SchemaTest } from "../types";
-import { Schema } from "./schema";
+import { Schema } from "./base";
 import { valid, invalid } from "../utils";
 import { MissingError } from "../errors";
 
