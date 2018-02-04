@@ -28,9 +28,11 @@ if (result.valid) {
 
 ## Features
 
-* Types; string, number, boolean, object and array
-* Constraints depending on the type, e.g. string.length
+* Validation against types and exact values
+* Correctly typed result object
+* Relevant constraints for each type, e.g. string.length
 * Optional and default values
+* Referencing values within objects
 
 ## Installation
 
