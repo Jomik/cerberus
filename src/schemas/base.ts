@@ -4,6 +4,10 @@ import { mergeResults, valid } from "../utils";
 export class Schema<A> {
   constructor(protected internalValidate: SchemaTest<A>) {}
 
+  /**
+   * Validate object against schema
+   * @param obj The object to validate
+   */
   validate(obj: any): ValidationResult<A> {
     return this.internalValidate(obj);
   }
@@ -22,12 +26,19 @@ export class Schema<A> {
     });
   }
 
+  /**
+   * Mark as optional
+   */
   optional(): Schema<A | undefined> {
     return new Schema(
       (obj) => (obj === undefined ? valid(undefined) : this.validate(obj))
     );
   }
 
+  /**
+   * Set a default value to use in place of an undefined object
+   * @param value The default value
+   */
   default<B>(value: B): Schema<A | B> {
     return new Schema(
       (obj) => (obj === undefined ? valid(value) : this.validate(obj))

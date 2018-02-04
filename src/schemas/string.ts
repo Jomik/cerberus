@@ -22,6 +22,10 @@ export class StringSchema<A extends string> extends Schema<A> {
     super(internalValidate);
   }
 
+  /**
+   * Require the string to include str
+   * @param str The required string
+   */
   includes(str: string): StringSchema<A> {
     return this.chain<StringSchema<A>>(
       test((obj) => [

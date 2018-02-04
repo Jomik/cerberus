@@ -13,6 +13,10 @@ export class NumberSchema<A extends number> extends Schema<A> {
     super(validate);
   }
 
+  /**
+   * Require the number to be greater than n
+   * @param n The bound
+   */
   gt(n: number): NumberSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
@@ -22,6 +26,11 @@ export class NumberSchema<A extends number> extends Schema<A> {
       NumberSchema
     );
   }
+
+  /**
+   * Require the number to be greater than or equal to n
+   * @param n The bound
+   */
   ge(n: number): NumberSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
@@ -31,6 +40,11 @@ export class NumberSchema<A extends number> extends Schema<A> {
       NumberSchema
     );
   }
+
+  /**
+   * Require the number to be equal to n
+   * @param n The bound
+   */
   eq(n: number): NumberSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
@@ -40,6 +54,11 @@ export class NumberSchema<A extends number> extends Schema<A> {
       NumberSchema
     );
   }
+
+  /**
+   * Require the number to be less than or equal ton
+   * @param n The bound
+   */
   le(n: number): NumberSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
@@ -49,6 +68,11 @@ export class NumberSchema<A extends number> extends Schema<A> {
       NumberSchema
     );
   }
+
+  /**
+   * Require the number to be less than n
+   * @param n The bound
+   */
   lt(n: number): NumberSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
@@ -58,6 +82,12 @@ export class NumberSchema<A extends number> extends Schema<A> {
       NumberSchema
     );
   }
+
+  /**
+   * Require the number to be between low and high, inclusive
+   * @param low Low bound
+   * @param high High bound
+   */
   between(low: number, high: number): NumberSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
