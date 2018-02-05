@@ -17,7 +17,7 @@ export const string = new StringSchema();
 export const number = new NumberSchema();
 
 export function array<A>(schema: Schema<A>) {
-  return new ArraySchema(schema);
+  return new ArraySchema().of(schema);
 }
 export function object<A extends object>(
   specification: ObjectSpecification<A>
