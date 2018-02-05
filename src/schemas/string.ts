@@ -16,7 +16,7 @@ export class StringSchema<A extends string> extends Schema<A> {
   constructor(
     internalValidate: SchemaTest<any> = test((obj) => [
       typeof obj === "string",
-      () => [new TypeError(obj, "string")]
+      () => new TypeError(obj, "string")
     ])
   ) {
     super(internalValidate);
@@ -30,7 +30,7 @@ export class StringSchema<A extends string> extends Schema<A> {
     return this.chain<StringSchema<A>>(
       test((obj) => [
         obj.includes(str),
-        () => [new ConstraintError(obj, `include ${str}`)]
+        () => new ConstraintError(obj, `include ${str}`)
       ]),
       StringSchema
     );

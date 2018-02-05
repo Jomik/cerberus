@@ -1,4 +1,4 @@
-import { SchemaTest, ValidationResult } from "../types";
+import { SchemaTest, ValidationResult, SchemaConstructor } from "../types";
 import { mergeResults, valid } from "../utils";
 
 export class Schema<A> {
@@ -14,7 +14,7 @@ export class Schema<A> {
 
   protected chain<B extends Schema<A>>(
     next: SchemaTest<A>,
-    ctor: new (internalValidate: SchemaTest<A>) => B
+    ctor: SchemaConstructor<A, B>
   ): B {
     return new ctor((obj, path) => {
       const result1 = this.internalValidate(obj, path);

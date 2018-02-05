@@ -70,7 +70,7 @@ export function oneOf(...values: any[]) {
   return new Schema<any>(
     test((obj) => [
       values.some((val) => equal(val, obj)),
-      () => [new ValueError(obj, values)]
+      () => new ValueError(obj, values)
     ])
   );
 }
@@ -80,6 +80,6 @@ export function is<A extends number>(a: A): Schema<A>;
 export function is<A>(a: A): Schema<A>;
 export function is<A>(a: A): Schema<A> {
   return new Schema<A>(
-    test((obj) => [equal(obj, a), () => [new ValueError(obj, [a])]])
+    test((obj) => [equal(obj, a), () => new ValueError(obj, [a])])
   );
 }

@@ -1,7 +1,12 @@
 import { Schema } from "./base";
 import { test, invalid, mergeResults, valid, stringify } from "../utils";
 import { TypeError, ConstraintError } from "../errors";
-import { InvalidResult, ValidationResult, SchemaTest } from "../types";
+import {
+  InvalidResult,
+  ValidationResult,
+  SchemaTest,
+  SchemaConstructor
+} from "../types";
 import { NumericProperty } from "../constraints/property";
 import * as equal from "fast-deep-equal";
 
@@ -9,32 +14,35 @@ export class ArraySchema<A> extends Schema<A[]> {
   constructor(
     internalValidate: SchemaTest<A[]> = test((obj) => [
       Array.isArray(obj),
-      () => [new TypeError(obj, "array")]
+      () => new TypeError(obj, "array")
     ])
   ) {
     super(internalValidate);
   }
 
   of<B extends A>(schema: Schema<B>): ArraySchema<B> {
-    return this.chain((testObj, path) => {
-      const arr: B[] = [];
-      const results = testObj.map((e) => schema.validate(e));
-      return results.reduce(
-        (acc, cur, index) => {
-          if (cur.valid) {
-            arr[index] = cur.obj;
-            return acc;
-          } else {
-            const result = acc.valid
-              ? cur
-              : invalid(path, ...acc.errors.concat(cur.errors));
-            cur.errors.forEach((e) => e.path.unshift(index));
-            return result;
-          }
-        },
-        valid<B[]>(arr) as ValidationResult<B[]>
-      );
-    }, ArraySchema);
+    return this.chain<ArraySchema<B>>(
+      (obj, path) => {
+        const arr: B[] = [];
+        const results = obj.map((e) => schema.validate(e));
+        return results.reduce(
+          (acc, cur, index) => {
+            if (cur.valid) {
+              arr[index] = cur.obj;
+              return acc;
+            } else {
+              const result = acc.valid
+                ? cur
+                : invalid(path, ...acc.errors.concat(cur.errors));
+              cur.errors.forEach((e) => e.path.unshift(index));
+              return result;
+            }
+          },
+          valid<B[]>(arr) as ValidationResult<B[]>
+        );
+      },
+      ArraySchema as SchemaConstructor<B[], ArraySchema<B>>
+    );
   }
 
   get length(): NumericProperty<A[], ArraySchema<A>> {
@@ -57,7 +65,7 @@ export class ArraySchema<A> extends Schema<A[]> {
     return this.chain<ArraySchema<A>>(
       test((obj) => [
         obj.some(predicate),
-        () => [new ConstraintError(obj, description)]
+        () => new ConstraintError(obj, description)
       ]),
       ArraySchema
     );

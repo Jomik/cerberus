@@ -4,7 +4,7 @@ import {
   InvalidResult,
   ValidResult
 } from "./types";
-import { ValidationError, ValidationErrorConstructor } from "./errors";
+import { ValidationError } from "./errors";
 
 export function valid<A>(obj: any): ValidResult<A> {
   return { valid: true, obj };
@@ -20,11 +20,11 @@ export function invalid(
 }
 
 export function test<A>(
-  resultFunc: (obj: A) => [boolean, () => ValidationError[]]
+  resultFunc: (obj: A) => [boolean, () => ValidationError]
 ): SchemaTest<A> {
   return (obj, path) => {
-    const [result, errors] = resultFunc(obj);
-    return result ? valid<A>(obj) : invalid(path, ...errors());
+    const [result, error] = resultFunc(obj);
+    return result ? valid<A>(obj) : invalid(path, error());
   };
 }
 

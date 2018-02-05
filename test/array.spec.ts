@@ -1,6 +1,6 @@
 import "mocha";
 import { expect } from "chai";
-import { array, any, string } from "../src";
+import { array, any, string, oneOf } from "../src";
 import { InvalidResult, ValidResult } from "../src/types";
 import { object } from "../src/index";
 import { NumericProperty } from "../src/constraints/property";

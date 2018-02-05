@@ -7,7 +7,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
   constructor(
     validate: SchemaTest<A> = test((obj) => [
       typeof obj === "number",
-      () => [new TypeError(obj, "number")]
+      () => new TypeError(obj, "number")
     ])
   ) {
     super(validate);
@@ -21,7 +21,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj > n,
-        () => [new ConstraintError(obj, `be greater than ${n}`)]
+        () => new ConstraintError(obj, `be greater than ${n}`)
       ]),
       NumberSchema
     );
@@ -35,7 +35,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj >= n,
-        () => [new ConstraintError(obj, `be greater than or equal to ${n}`)]
+        () => new ConstraintError(obj, `be greater than or equal to ${n}`)
       ]),
       NumberSchema
     );
@@ -49,7 +49,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj === n,
-        () => [new ConstraintError(obj, `be equal to ${n}`)]
+        () => new ConstraintError(obj, `be equal to ${n}`)
       ]),
       NumberSchema
     );
@@ -63,7 +63,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj <= n,
-        () => [new ConstraintError(obj, `be less than or equal to ${n}`)]
+        () => new ConstraintError(obj, `be less than or equal to ${n}`)
       ]),
       NumberSchema
     );
@@ -77,7 +77,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj < n,
-        () => [new ConstraintError(obj, `be less than ${n}`)]
+        () => new ConstraintError(obj, `be less than ${n}`)
       ]),
       NumberSchema
     );
@@ -92,7 +92,7 @@ export class NumberSchema<A extends number> extends Schema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj >= low && obj <= high,
-        () => [new ConstraintError(obj, `be between ${low} and ${high}`)]
+        () => new ConstraintError(obj, `be between ${low} and ${high}`)
       ]),
       NumberSchema
     );

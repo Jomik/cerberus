@@ -1,7 +1,5 @@
 import { stringify } from "./utils";
 
-export type ValidationErrorConstructor = (obj) => ValidationError;
-
 export class ValidationError {
   get name(): string {
     return this.constructor.name;
