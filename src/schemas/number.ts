@@ -1,9 +1,9 @@
 import { test } from "../utils";
-import { Schema } from "./base";
+import { BaseSchema } from "./base";
 import { SchemaTest } from "../types";
 import { TypeError, ConstraintError } from "../errors";
 
-export class NumberSchema<A extends number> extends Schema<A> {
+export class NumberSchema<A extends number> extends BaseSchema<A> {
   constructor(
     validate: SchemaTest<A> = test((obj) => [
       typeof obj === "number",

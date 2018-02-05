@@ -11,8 +11,14 @@ export class Schema<A> {
   validate(obj: any): ValidationResult<A> {
     return this.internalValidate(obj);
   }
+}
 
-  protected chain<B extends Schema<A>>(
+export class BaseSchema<A> extends Schema<A> {
+  constructor(internalValidate: SchemaTest<A>) {
+    super(internalValidate);
+  }
+
+  protected chain<B extends BaseSchema<A>>(
     next: SchemaTest<A>,
     ctor: SchemaConstructor<A, B>
   ): B {

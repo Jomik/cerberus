@@ -1,4 +1,4 @@
-import { Schema } from "./base";
+import { BaseSchema } from "./base";
 import { test, invalid, mergeResults, valid, stringify } from "../utils";
 import { TypeError, ConstraintError } from "../errors";
 import {
@@ -10,7 +10,7 @@ import {
 import { NumericProperty } from "../constraints/property";
 import * as equal from "fast-deep-equal";
 
-export class ArraySchema<A> extends Schema<A[]> {
+export class ArraySchema<A> extends BaseSchema<A[]> {
   constructor(
     internalValidate: SchemaTest<A[]> = test((obj) => [
       Array.isArray(obj),
@@ -20,7 +20,7 @@ export class ArraySchema<A> extends Schema<A[]> {
     super(internalValidate);
   }
 
-  of<B extends A>(schema: Schema<B>): ArraySchema<B> {
+  of<B extends A>(schema: BaseSchema<B>): ArraySchema<B> {
     return this.chain<ArraySchema<B>>(
       (obj, path) => {
         const arr: B[] = [];

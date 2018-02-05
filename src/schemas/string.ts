@@ -1,10 +1,10 @@
 import { test } from "../utils";
-import { Schema } from "./base";
+import { BaseSchema } from "./base";
 import { SchemaTest, ChainMethod } from "../types";
 import { TypeError, ConstraintError } from "../errors";
 import { NumericProperty } from "../constraints/property";
 
-export class StringSchema<A extends string> extends Schema<A> {
+export class StringSchema<A extends string> extends BaseSchema<A> {
   get length(): NumericProperty<A, StringSchema<A>> {
     return new NumericProperty<A, StringSchema<A>>(
       "length",
