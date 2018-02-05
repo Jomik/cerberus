@@ -17,7 +17,7 @@ export class NumericProperty<A, B extends Schema<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] > n,
-        () => [new ConstraintError(obj, `be greater than ${n}`, this.prop)]
+        () => new ConstraintError(obj, `be greater than ${n}`, this.prop)
       ]),
       this.ctor
     );
@@ -31,13 +31,12 @@ export class NumericProperty<A, B extends Schema<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] >= n,
-        () => [
+        () =>
           new ConstraintError(
             obj,
             `be greater than or equal to ${n}`,
             this.prop
           )
-        ]
       ]),
       this.ctor
     );
@@ -51,7 +50,7 @@ export class NumericProperty<A, B extends Schema<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] === n,
-        () => [new ConstraintError(obj, `be equal to ${n}`, this.prop)]
+        () => new ConstraintError(obj, `be equal to ${n}`, this.prop)
       ]),
       this.ctor
     );
@@ -65,9 +64,8 @@ export class NumericProperty<A, B extends Schema<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] <= n,
-        () => [
+        () =>
           new ConstraintError(obj, `be less than or equal to ${n}`, this.prop)
-        ]
       ]),
       this.ctor
     );
@@ -81,7 +79,7 @@ export class NumericProperty<A, B extends Schema<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] < n,
-        () => [new ConstraintError(obj, `be less than ${n}`, this.prop)]
+        () => new ConstraintError(obj, `be less than ${n}`, this.prop)
       ]),
       this.ctor
     );
@@ -96,9 +94,8 @@ export class NumericProperty<A, B extends Schema<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] >= low && obj[this.prop] <= high,
-        () => [
+        () =>
           new ConstraintError(obj, `be between ${low} and ${high}`, this.prop)
-        ]
       ]),
       this.ctor
     );

@@ -1,6 +1,6 @@
-import { invalid, valid } from "../utils";
+import { invalid, valid, test } from "../utils";
 import { Schema } from "./base";
-import { ValidationResult } from "../types";
+import { ValidationResult, SchemaConstructor, SchemaTest } from "../types";
 import { TypeError } from "../errors";
 
 export type ObjectSpecification<A extends object> = {
@@ -19,20 +19,31 @@ function notReference<A, B extends Schema<A>>(
 }
 
 export class ObjectSchema<A extends object> extends Schema<A> {
-  constructor(spec: ObjectSpecification<A>) {
-    super((testObj, path) => {
-      if (
-        testObj !== null &&
-        typeof testObj === "object" &&
-        !Array.isArray(testObj)
-      ) {
+  constructor(
+    internalValidate: SchemaTest<A> = test((obj) => [
+      obj === undefined || (typeof obj === "object" && !Array.isArray(obj)),
+      () => new TypeError(obj, "object")
+    ])
+  ) {
+    super(internalValidate);
+  }
+
+  of<B extends A>(spec: ObjectSpecification<B>): ObjectSchema<B> {
+    return this.chain<ObjectSchema<B>>(
+      (testObj, path) => {
+        if (
+          (testObj === undefined || testObj === null) &&
+          Object.keys(spec).length === 0
+        ) {
+          return invalid(testObj, new TypeError(testObj, "object"));
+        }
         const obj = Object.assign({}, testObj);
         let result: ValidationResult<A> = {
           valid: true,
           obj
         };
 
-        function updateObj<B>(schema: Schema<B>, key: string, p?: string) {
+        function updateObj<C>(schema: Schema<C>, key: string, p?: string) {
           const res = (schema as any).internalValidate(obj[key], key);
           if (!res.valid) {
             if (p !== undefined) {
@@ -52,7 +63,7 @@ export class ObjectSchema<A extends object> extends Schema<A> {
           /* istanbul ignore else */
           if (spec.hasOwnProperty(key)) {
             const schema = spec[key];
-            if (notReference<A[keyof A], Schema<A[keyof A]>>(schema)) {
+            if (notReference<B[keyof B], Schema<B[keyof B]>>(schema)) {
               updateObj(schema, key, path);
             }
           }
@@ -62,7 +73,7 @@ export class ObjectSchema<A extends object> extends Schema<A> {
           /* istanbul ignore else */
           if (spec.hasOwnProperty(key)) {
             const schemaFunc = spec[key];
-            if (isReference<A[keyof A], Schema<A[keyof A]>>(schemaFunc)) {
+            if (isReference<B[keyof B], Schema<B[keyof B]>>(schemaFunc)) {
               const schema = schemaFunc(obj);
               updateObj(schema, key, path);
             }
@@ -70,13 +81,8 @@ export class ObjectSchema<A extends object> extends Schema<A> {
         }
 
         return result;
-      } else if (testObj === undefined && Object.keys(spec).length > 0) {
-        const result = this.internalValidate({} as any, path);
-        if (result.valid) {
-          return result;
-        }
-      }
-      return invalid(path, new TypeError(testObj, "object"));
-    });
+      },
+      ObjectSchema as SchemaConstructor<B, ObjectSchema<B>>
+    );
   }
 }
