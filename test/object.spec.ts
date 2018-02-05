@@ -1,6 +1,6 @@
 import "mocha";
 import { expect } from "chai";
-import { object, any, number } from "../src";
+import { object, any, number, string } from "../src";
 import { InvalidResult, ValidResult } from "../src/types";
 // tslint:disable:no-unused-expression
 
@@ -82,6 +82,11 @@ describe("object", () => {
         })
       });
       const { valid } = spec.validate({ a: 10 });
+      expect(valid).to.be.true;
+    });
+    it("extend", () => {
+      const spec = object({ a: string, b: string }).extend({ c: string });
+      const { valid } = spec.validate({ a: "foo", b: "bar", c: "baz" });
       expect(valid).to.be.true;
     });
   });

@@ -28,12 +28,14 @@ export class ObjectSchema<A extends object> extends Schema<A> {
     super(internalValidate);
   }
 
-  of<B extends A>(spec: ObjectSpecification<B>): ObjectSchema<B> {
-    return this.chain<ObjectSchema<B>>(
+  extend<B extends object>(
+    specification: ObjectSpecification<B>
+  ): ObjectSchema<A & B> {
+    return this.chain<ObjectSchema<A & B>>(
       (testObj, path) => {
         if (
           (testObj === undefined || testObj === null) &&
-          Object.keys(spec).length === 0
+          Object.keys(specification).length === 0
         ) {
           return invalid(testObj, new TypeError(testObj, "object"));
         }
@@ -59,20 +61,20 @@ export class ObjectSchema<A extends object> extends Schema<A> {
           }
         }
 
-        for (const key in spec) {
+        for (const key in specification) {
           /* istanbul ignore else */
-          if (spec.hasOwnProperty(key)) {
-            const schema = spec[key];
+          if (specification.hasOwnProperty(key)) {
+            const schema = specification[key];
             if (notReference<B[keyof B], Schema<B[keyof B]>>(schema)) {
               updateObj(schema, key, path);
             }
           }
         }
 
-        for (const key in spec) {
+        for (const key in specification) {
           /* istanbul ignore else */
-          if (spec.hasOwnProperty(key)) {
-            const schemaFunc = spec[key];
+          if (specification.hasOwnProperty(key)) {
+            const schemaFunc = specification[key];
             if (isReference<B[keyof B], Schema<B[keyof B]>>(schemaFunc)) {
               const schema = schemaFunc(obj);
               updateObj(schema, key, path);
@@ -82,7 +84,7 @@ export class ObjectSchema<A extends object> extends Schema<A> {
 
         return result;
       },
-      ObjectSchema as SchemaConstructor<B, ObjectSchema<B>>
+      ObjectSchema as SchemaConstructor<A & B, ObjectSchema<A & B>>
     );
   }
 }

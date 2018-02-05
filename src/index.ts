@@ -22,5 +22,5 @@ export function array<A>(schema: Schema<A>) {
 export function object<A extends object>(
   specification: ObjectSpecification<A>
 ) {
-  return new ObjectSchema().of(specification);
+  return new ObjectSchema().extend(specification);
 }
