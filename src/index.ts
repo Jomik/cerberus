@@ -20,7 +20,7 @@ export const string = new StringSchema();
 export const number = new NumberSchema();
 
 export function array<A>(schema: BaseSchema<A>) {
-  return new ArraySchema().of(schema);
+  return new ArraySchema(schema);
 }
 export function object<A extends object>(
   specification: ObjectSpecification<A>

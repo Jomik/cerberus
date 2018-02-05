@@ -1,4 +1,4 @@
-import { BaseSchema } from "./base";
+import { BaseSchema, Schema } from "./base";
 import { test, invalid, mergeResults, valid, stringify } from "../utils";
 import { TypeError, ConstraintError } from "../errors";
 import {
@@ -11,38 +11,34 @@ import { NumericProperty } from "../constraints/property";
 import * as equal from "fast-deep-equal";
 
 export class ArraySchema<A> extends BaseSchema<A[]> {
-  constructor(
-    internalValidate: SchemaTest<A[]> = test((obj) => [
-      Array.isArray(obj),
-      () => new TypeError(obj, "array")
-    ])
-  ) {
-    super(internalValidate);
-  }
-
-  of<B extends A>(schema: BaseSchema<B>): ArraySchema<B> {
-    return this.chain<ArraySchema<B>>(
-      (obj, path) => {
-        const arr: B[] = [];
-        const results = obj.map((e) => schema.validate(e));
-        return results.reduce(
-          (acc, cur, index) => {
-            if (cur.valid) {
-              arr[index] = cur.obj;
-              return acc;
-            } else {
-              const result = acc.valid
-                ? cur
-                : invalid(path, ...acc.errors.concat(cur.errors));
-              cur.errors.forEach((e) => e.path.unshift(index));
-              return result;
-            }
-          },
-          valid<B[]>(arr) as ValidationResult<B[]>
-        );
-      },
-      ArraySchema as SchemaConstructor<B[], ArraySchema<B>>
-    );
+  constructor(arg: SchemaTest<A[]> | Schema<A>) {
+    if (arg instanceof Schema) {
+      super((obj, path) => {
+        if (Array.isArray(obj)) {
+          const arr: A[] = [];
+          const results = obj.map((e) => arg.validate(e));
+          return results.reduce(
+            (acc, cur, index) => {
+              if (cur.valid) {
+                arr[index] = cur.obj;
+                return acc;
+              } else {
+                const result = acc.valid
+                  ? cur
+                  : invalid(path, ...acc.errors.concat(cur.errors));
+                cur.errors.forEach((e) => e.path.unshift(index));
+                return result;
+              }
+            },
+            valid<A[]>(arr) as ValidationResult<A[]>
+          );
+        } else {
+          return invalid(path, new TypeError(obj, "array"));
+        }
+      });
+    } else {
+      super(arg);
+    }
   }
 
   get length(): NumericProperty<A[], ArraySchema<A>> {
