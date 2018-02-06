@@ -104,6 +104,11 @@ describe("object", () => {
       });
       expect(valid).to.be.true;
     });
+    it("strict", () => {
+      const spec = object({ a: string, b: number }).strict();
+      const { valid } = spec.validate({ b: 42, a: "foo" });
+      expect(valid).to.be.true;
+    });
   });
   describe("rejects", () => {
     it("<string>", () => {
@@ -206,6 +211,26 @@ describe("object", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(2);
+    });
+    it("strict, missing", () => {
+      const spec = object({ a: string, b: number }).strict();
+      const { valid, errors } = spec.validate({ a: "bar" }) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("strict, additional", () => {
+      const spec = object({ a: string, b: number }).strict();
+      const { valid, errors } = spec.validate({
+        a: "foo",
+        b: "bar",
+        c: "baz"
+      }) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
     });
   });
 });

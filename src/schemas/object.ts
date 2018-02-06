@@ -1,7 +1,8 @@
 import { invalid, valid, test } from "../utils";
 import { BaseSchema, Schema } from "./base";
 import { ValidationResult, SchemaConstructor, SchemaTest } from "../types";
-import { TypeError } from "../errors";
+import { TypeError, ConstraintError } from "../errors";
+import * as equal from "fast-deep-equal";
 
 export type ObjectSpecification<A extends object> = {
   [k in keyof A]: Schema<A[k]> | ((obj: A) => Schema<A[k]>)
@@ -100,5 +101,20 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
     ) as ObjectSpecification<A & B>;
 
     return new ObjectSchema<A & B>(this.internalValidate, mergedSpec);
+  }
+
+  strict(): ObjectSchema<A> {
+    return this.chain<ObjectSchema<A>>(
+      test((obj) => [
+        equal(Object.keys(obj).sort(), Object.keys(this.specification).sort()),
+        () =>
+          new ConstraintError(
+            obj,
+            `contain exactly the keys ${Object.keys(this.specification)}`
+          )
+      ]),
+      ObjectSchema as SchemaConstructor<A, ObjectSchema<A>>,
+      this.specification
+    );
   }
 }

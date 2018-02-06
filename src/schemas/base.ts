@@ -20,7 +20,8 @@ export class BaseSchema<A> extends Schema<A> {
 
   protected chain<B extends BaseSchema<A>>(
     next: SchemaTest<A>,
-    ctor: SchemaConstructor<A, B>
+    ctor: SchemaConstructor<A, B>,
+    ...args: any[]
   ): B {
     return new ctor((obj) => {
       const result1 = this.internalValidate(obj);
@@ -29,7 +30,7 @@ export class BaseSchema<A> extends Schema<A> {
       }
       const result2 = result1.valid ? next(result1.obj) : next(obj);
       return mergeResults(result1, result2);
-    });
+    }, ...args);
   }
 
   /**

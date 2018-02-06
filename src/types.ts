@@ -2,7 +2,8 @@ import { ValidationError } from "./errors";
 import { BaseSchema, Schema } from "./schemas/base";
 
 export type SchemaConstructor<A, B extends Schema<A>> = new (
-  internalValidate: SchemaTest<A>
+  internalValidate: SchemaTest<A>,
+  ...args: any[]
 ) => B;
 export type ChainMethod<A, B extends BaseSchema<A>> = (
   next: SchemaTest<A>,
