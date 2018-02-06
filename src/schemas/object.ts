@@ -20,71 +20,79 @@ function notReference<A, B extends Schema<A>>(
 
 export class ObjectSchema<A extends object> extends BaseSchema<A> {
   constructor(
-    internalValidate: SchemaTest<A> = test((obj) => [
+    internalValidate: SchemaTest<any> = test((obj) => [
       obj === undefined || (typeof obj === "object" && !Array.isArray(obj)),
       () => new TypeError(obj, "object")
-    ])
+    ]),
+    private specification: ObjectSpecification<A>
   ) {
     super(internalValidate);
   }
 
-  extend<B extends object>(
+  /**
+   * Validate object against schema
+   * @param obj The object to validate
+   */
+  validate(object: any): ValidationResult<A> {
+    let result = this.internalValidate(object);
+    if (!result.valid) {
+      return result;
+    }
+
+    if (
+      (object === undefined || object === null) &&
+      Object.keys(this.specification).length === 0
+    ) {
+      return invalid(object, new TypeError(object, "object"));
+    }
+    const obj = Object.assign({}, object);
+    result.obj = obj;
+
+    function updateObj<C>(schema: Schema<C>, key: string) {
+      const res = schema.validate(obj[key]);
+      if (!res.valid) {
+        res.errors.forEach((e) => e.path.unshift(key));
+        if (!result.valid) {
+          result.errors = result.errors.concat(res.errors);
+        } else {
+          result = res;
+        }
+      } else if (result.valid) {
+        obj[key] = res.obj;
+      }
+    }
+
+    for (const key in this.specification) {
+      /* istanbul ignore else */
+      if (this.specification.hasOwnProperty(key)) {
+        const schema = this.specification[key];
+        if (notReference<A[keyof A], Schema<A[keyof A]>>(schema)) {
+          updateObj(schema, key);
+        }
+      }
+    }
+    for (const key in this.specification) {
+      /* istanbul ignore else */
+      if (this.specification.hasOwnProperty(key)) {
+        const schemaFunc = this.specification[key];
+        if (isReference<A[keyof A], Schema<A[keyof A]>>(schemaFunc)) {
+          const schema = schemaFunc(obj);
+          updateObj(schema, key);
+        }
+      }
+    }
+    return result;
+  }
+
+  merge<B extends object>(
     specification: ObjectSpecification<B>
   ): ObjectSchema<A & B> {
-    return this.chain<ObjectSchema<A & B>>(
-      (testObj, path) => {
-        if (
-          (testObj === undefined || testObj === null) &&
-          Object.keys(specification).length === 0
-        ) {
-          return invalid(testObj, new TypeError(testObj, "object"));
-        }
-        const obj = Object.assign({}, testObj);
-        let result: ValidationResult<A> = {
-          valid: true,
-          obj
-        };
+    const mergedSpec = Object.assign(
+      {},
+      this.specification,
+      specification
+    ) as ObjectSpecification<A & B>;
 
-        function updateObj<C>(schema: Schema<C>, key: string, p?: string) {
-          const res = (schema as any).internalValidate(obj[key], key);
-          if (!res.valid) {
-            if (p !== undefined) {
-              res.errors.forEach((e) => e.path.unshift(p));
-            }
-            if (!result.valid) {
-              result.errors = result.errors.concat(res.errors);
-            } else {
-              result = res;
-            }
-          } else if (result.valid) {
-            obj[key] = res.obj;
-          }
-        }
-
-        for (const key in specification) {
-          /* istanbul ignore else */
-          if (specification.hasOwnProperty(key)) {
-            const schema = specification[key];
-            if (notReference<B[keyof B], Schema<B[keyof B]>>(schema)) {
-              updateObj(schema, key, path);
-            }
-          }
-        }
-
-        for (const key in specification) {
-          /* istanbul ignore else */
-          if (specification.hasOwnProperty(key)) {
-            const schemaFunc = specification[key];
-            if (isReference<B[keyof B], Schema<B[keyof B]>>(schemaFunc)) {
-              const schema = schemaFunc(obj);
-              updateObj(schema, key, path);
-            }
-          }
-        }
-
-        return result;
-      },
-      ObjectSchema as SchemaConstructor<A & B, ObjectSchema<A & B>>
-    );
+    return new ObjectSchema<A & B>(this.internalValidate, mergedSpec);
   }
 }

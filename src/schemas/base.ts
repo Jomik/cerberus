@@ -8,8 +8,8 @@ export class Schema<A> {
    * Validate object against schema
    * @param obj The object to validate
    */
-  validate(obj: any): ValidationResult<A> {
-    return this.internalValidate(obj);
+  validate(object: any): ValidationResult<A> {
+    return this.internalValidate(object);
   }
 }
 

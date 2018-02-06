@@ -25,5 +25,5 @@ export function array<A>(schema: BaseSchema<A>) {
 export function object<A extends object>(
   specification: ObjectSpecification<A>
 ) {
-  return new ObjectSchema().extend(specification);
+  return new ObjectSchema(undefined, specification);
 }

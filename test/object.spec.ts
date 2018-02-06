@@ -84,9 +84,23 @@ describe("object", () => {
       const { valid } = spec.validate({ a: 10 });
       expect(valid).to.be.true;
     });
-    it("extend", () => {
-      const spec = object({ a: string, b: string }).extend({ c: string });
+    it("merge", () => {
+      const spec = object({ a: string, b: string }).merge({ c: string });
       const { valid } = spec.validate({ a: "foo", b: "bar", c: "baz" });
+      expect(valid).to.be.true;
+    });
+    it("merge overrides", () => {
+      const spec = object({ a: string, b: string }).merge({ b: number });
+      const { valid } = spec.validate({ a: "foo", b: 42 });
+      expect(valid).to.be.true;
+    });
+    it("recursive", () => {
+      const spec = object({ a: string });
+      const recursiveSpec = spec.merge({ b: spec });
+      const { valid } = spec.validate({
+        a: "foo",
+        b: { a: "bar", b: { a: "baz" } }
+      });
       expect(valid).to.be.true;
     });
   });
@@ -150,6 +164,17 @@ describe("object", () => {
         .to.be.an("array")
         .of.length(1);
     });
+    it("merge overrides", () => {
+      const spec = object({ a: string, b: string }).merge({ b: number });
+      const { valid, errors } = spec.validate({
+        a: "foo",
+        b: "bar"
+      }) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
     it("wrong objects", () => {
       const spec = object({
         a: any,
@@ -178,7 +203,6 @@ describe("object", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(2);
-      console.log(errors.map((e) => e.toString()));
     });
   });
 });
