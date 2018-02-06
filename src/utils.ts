@@ -9,22 +9,16 @@ import { ValidationError } from "./errors";
 export function valid<A>(obj: any): ValidResult<A> {
   return { valid: true, obj };
 }
-export function invalid(
-  path?: string,
-  ...errors: ValidationError[]
-): InvalidResult {
-  if (path !== undefined) {
-    errors.forEach((e) => e.path.push(path));
-  }
+export function invalid(...errors: ValidationError[]): InvalidResult {
   return { valid: false, errors };
 }
 
 export function test<A>(
   resultFunc: (obj: A) => [boolean, () => ValidationError]
 ): SchemaTest<A> {
-  return (obj, path) => {
+  return (obj) => {
     const [result, error] = resultFunc(obj);
-    return result ? valid<A>(obj) : invalid(path, error());
+    return result ? valid<A>(obj) : invalid(error());
   };
 }
 

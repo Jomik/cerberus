@@ -13,7 +13,7 @@ import * as equal from "fast-deep-equal";
 export class ArraySchema<A> extends BaseSchema<A[]> {
   constructor(arg: SchemaTest<A[]> | Schema<A>) {
     if (arg instanceof Schema) {
-      super((obj, path) => {
+      super((obj) => {
         if (Array.isArray(obj)) {
           const arr: A[] = [];
           const results = obj.map((e) => arg.validate(e));
@@ -25,7 +25,7 @@ export class ArraySchema<A> extends BaseSchema<A[]> {
               } else {
                 const result = acc.valid
                   ? cur
-                  : invalid(path, ...acc.errors.concat(cur.errors));
+                  : invalid(...acc.errors.concat(cur.errors));
                 cur.errors.forEach((e) => e.path.unshift(index));
                 return result;
               }
@@ -33,7 +33,7 @@ export class ArraySchema<A> extends BaseSchema<A[]> {
             valid<A[]>(arr) as ValidationResult<A[]>
           );
         } else {
-          return invalid(path, new TypeError(obj, "array"));
+          return invalid(new TypeError(obj, "array"));
         }
       });
     } else {

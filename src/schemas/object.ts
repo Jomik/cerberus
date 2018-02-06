@@ -43,7 +43,7 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
       (object === undefined || object === null) &&
       Object.keys(this.specification).length === 0
     ) {
-      return invalid(object, new TypeError(object, "object"));
+      return invalid(new TypeError(object, "object"));
     }
     const obj = Object.assign({}, object);
     result.obj = obj;

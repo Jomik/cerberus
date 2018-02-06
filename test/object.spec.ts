@@ -2,6 +2,7 @@ import "mocha";
 import { expect } from "chai";
 import { object, any, number, string } from "../src";
 import { InvalidResult, ValidResult } from "../src/types";
+import { array } from "../src/index";
 // tslint:disable:no-unused-expression
 
 describe("object", () => {
@@ -179,16 +180,18 @@ describe("object", () => {
       const spec = object({
         a: any,
         b: object({ foo: any, bar: any }),
-        c: any
+        c: any,
+        d: array(string)
       });
       const { valid, errors } = spec.validate({
         b: "foo",
-        c: "bar"
+        c: "bar",
+        d: ["foo", "bar", 42]
       }) as InvalidResult;
       expect(valid).to.be.false;
       expect(errors)
         .to.be.an("array")
-        .of.length(2);
+        .of.length(3);
     });
     it("wrong nested objects", () => {
       const spec = object({

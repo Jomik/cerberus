@@ -22,12 +22,12 @@ export class BaseSchema<A> extends Schema<A> {
     next: SchemaTest<A>,
     ctor: SchemaConstructor<A, B>
   ): B {
-    return new ctor((obj, path) => {
-      const result1 = this.internalValidate(obj, path);
+    return new ctor((obj) => {
+      const result1 = this.internalValidate(obj);
       if (!result1.valid && result1.errors.some((e) => e.fatal)) {
         return result1;
       }
-      const result2 = result1.valid ? next(result1.obj, path) : next(obj, path);
+      const result2 = result1.valid ? next(result1.obj) : next(obj);
       return mergeResults(result1, result2);
     });
   }
