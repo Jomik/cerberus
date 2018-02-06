@@ -18,6 +18,26 @@ function notReference<A, B extends Schema<A>>(
   return typeof schema !== "function";
 }
 
+function updateObj<A, C>(
+  schema: Schema<C>,
+  result: ValidationResult<A>,
+  obj: A,
+  key: string
+) {
+  const res = schema.validate(obj[key]);
+  if (!res.valid) {
+    res.errors.forEach((e) => e.path.unshift(key));
+    if (!result.valid) {
+      result.errors = result.errors.concat(res.errors);
+    } else {
+      return res;
+    }
+  } else if (result.valid) {
+    obj[key] = res.obj;
+  }
+  return result;
+}
+
 export class ObjectSchema<A extends object> extends BaseSchema<A> {
   constructor(
     internalValidate: SchemaTest<any> = test((obj) => [
@@ -48,26 +68,12 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
     const obj = Object.assign({}, object);
     result.obj = obj;
 
-    function updateObj<C>(schema: Schema<C>, key: string) {
-      const res = schema.validate(obj[key]);
-      if (!res.valid) {
-        res.errors.forEach((e) => e.path.unshift(key));
-        if (!result.valid) {
-          result.errors = result.errors.concat(res.errors);
-        } else {
-          result = res;
-        }
-      } else if (result.valid) {
-        obj[key] = res.obj;
-      }
-    }
-
     for (const key in this.specification) {
       /* istanbul ignore else */
       if (this.specification.hasOwnProperty(key)) {
         const schema = this.specification[key];
         if (notReference<A[keyof A], Schema<A[keyof A]>>(schema)) {
-          updateObj(schema, key);
+          result = updateObj<A, A[keyof A]>(schema, result, obj, key);
         }
       }
     }
@@ -77,7 +83,7 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
         const schemaFunc = this.specification[key];
         if (isReference<A[keyof A], Schema<A[keyof A]>>(schemaFunc)) {
           const schema = schemaFunc(obj);
-          updateObj(schema, key);
+          result = updateObj<A, A[keyof A]>(schema, result, obj, key);
         }
       }
     }
