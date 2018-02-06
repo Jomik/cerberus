@@ -178,6 +178,7 @@ describe("object", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(2);
+      console.log(errors.map((e) => e.toString()));
     });
   });
 });

@@ -1,18 +1,18 @@
 import { invalid, valid, test } from "../utils";
-import { BaseSchema } from "./base";
+import { BaseSchema, Schema } from "./base";
 import { ValidationResult, SchemaConstructor, SchemaTest } from "../types";
 import { TypeError } from "../errors";
 
 export type ObjectSpecification<A extends object> = {
-  [k in keyof A]: BaseSchema<A[k]> | ((obj: A) => BaseSchema<A[k]>)
+  [k in keyof A]: Schema<A[k]> | ((obj: A) => Schema<A[k]>)
 };
 
-function isReference<A, B extends BaseSchema<A>>(
+function isReference<A, B extends Schema<A>>(
   schema: B | ((obj: any) => B)
 ): schema is ((obj: any) => B) {
   return typeof schema === "function";
 }
-function notReference<A, B extends BaseSchema<A>>(
+function notReference<A, B extends Schema<A>>(
   schema: B | ((obj: any) => B)
 ): schema is B {
   return typeof schema !== "function";
@@ -45,7 +45,7 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
           obj
         };
 
-        function updateObj<C>(schema: BaseSchema<C>, key: string, p?: string) {
+        function updateObj<C>(schema: Schema<C>, key: string, p?: string) {
           const res = (schema as any).internalValidate(obj[key], key);
           if (!res.valid) {
             if (p !== undefined) {
@@ -65,7 +65,7 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
           /* istanbul ignore else */
           if (specification.hasOwnProperty(key)) {
             const schema = specification[key];
-            if (notReference<B[keyof B], BaseSchema<B[keyof B]>>(schema)) {
+            if (notReference<B[keyof B], Schema<B[keyof B]>>(schema)) {
               updateObj(schema, key, path);
             }
           }
@@ -75,7 +75,7 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
           /* istanbul ignore else */
           if (specification.hasOwnProperty(key)) {
             const schemaFunc = specification[key];
-            if (isReference<B[keyof B], BaseSchema<B[keyof B]>>(schemaFunc)) {
+            if (isReference<B[keyof B], Schema<B[keyof B]>>(schemaFunc)) {
               const schema = schemaFunc(obj);
               updateObj(schema, key, path);
             }
