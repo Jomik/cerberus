@@ -35,6 +35,43 @@ if (result.valid) {
 * Optional and default values
 * Referencing values within objects
 
+## API Reference
+
+_Temporary_
+
+`validate(schema: Schema, obj: any)` Validates object against schema \
+`Schema#validate(obj: any)` Validates object against schema \
+`Schema#optional()` Allows the value to be undefined \
+`Schema#default(value: A)` Sets a default `value` if object is undefined
+
+`AnySchema` Returns type `any` when validated
+
+`NumberSchema` Returns type `number` when validated \
+ `#gt/ge/eq/le/lt(n: number)` Requires number to satisfy the equality \
+ `#between(low: number, high: number)` Requires the number to be between `low` and `high`, inclusive
+
+`StringSchema` Returns type `string` when validated \
+ `#includes(str: string)` Requires the string to include `str` \
+ `.length#gt/ge/eq/le/lt(n: number)` Requires the length of the string to satisfy the equality
+
+`ArraySchema<A>` Returns type `Array<A>` when validated \
+ _Constructed with a Schema_ \
+`#includes(value: A)` Requires that the array includes `value`, checked with deep equality \
+ `#some(predicate: (obj: A) => boolean, description: string)` Requires some element to satisfy the predicate \
+ `.length#gt/ge/eq/le/lt(n: number)` Requires the length of the array to satisfy the equality \
+ `.length#between(low: number, high: number)` Requires length of array to be between `low` and `high`, inclusive
+
+`ObjectSchema<A>` Returns type `object` when validated \
+ _Constructed with an ObjectSpecification_ \
+ `#merge(spec: ObjectSpecification<B>` Merges `spec` into the schema's specification, overriding clashes \
+ `#strict()` Requires the object to have exactly the keys specified
+
+```ts
+type ObjectSpecification<A extends object> = {
+  [k in keyof A]: Schema<A[k]> | ((obj: A) => Schema<A[k]>)
+};
+```
+
 ## Installation
 
 ```
