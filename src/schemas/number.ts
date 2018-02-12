@@ -1,14 +1,21 @@
-import { test } from "../utils";
+import { test, valid, invalid } from "../utils";
 import { BaseSchema } from "./base";
 import { SchemaTest } from "../types";
 import { TypeError, ConstraintError } from "../errors";
 
 export class NumberSchema<A extends number> extends BaseSchema<A> {
   constructor(
-    validate: SchemaTest<A> = test((obj) => [
-      typeof obj === "number",
-      () => new TypeError(obj, "number")
-    ])
+    validate: SchemaTest<A> = (obj) => {
+      if (typeof obj === "number") {
+        return valid(obj);
+      } else if (typeof obj === "string") {
+        const n = parseFloat(obj);
+        if (!isNaN(n) && isFinite(n)) {
+          return valid(n);
+        }
+      }
+      return invalid(new TypeError(obj, "number"));
+    }
   ) {
     super(validate);
   }

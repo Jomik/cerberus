@@ -1,7 +1,7 @@
 import "mocha";
 import { expect } from "chai";
 import { number } from "../src";
-import { InvalidResult } from "../src/types";
+import { InvalidResult, ValidResult } from "../src/types";
 // tslint:disable:no-unused-expression
 
 describe("number", () => {
@@ -11,8 +11,55 @@ describe("number", () => {
       const { valid } = spec.validate(42);
       expect(valid).to.be.true;
     });
+    it("number in string", () => {
+      const spec = number;
+      const { valid, obj } = spec.validate("42") as ValidResult<number>;
+      expect(valid).to.be.true;
+      expect(obj).to.equal(42);
+    });
+    it("number prefixed in string", () => {
+      const spec = number;
+      const { valid, obj } = spec.validate("42foo") as ValidResult<number>;
+      expect(valid).to.be.true;
+      expect(obj).to.equal(42);
+    });
   });
-  describe("rejects", () => {});
+  describe("rejects", () => {
+    it("<undefined>", () => {
+      const spec = number;
+      const { valid: invalid, errors } = spec.validate(
+        undefined
+      ) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("<string>", () => {
+      const spec = number;
+      const { valid: invalid, errors } = spec.validate("foo") as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("<object>", () => {
+      const spec = number;
+      const { valid: invalid, errors } = spec.validate({}) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("<array>", () => {
+      const spec = number;
+      const { valid: invalid, errors } = spec.validate([]) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+  });
   describe("has", () => {
     it("gt", () => {
       const spec = number.gt(5);
