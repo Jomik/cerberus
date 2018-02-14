@@ -33,6 +33,14 @@ describe("array", () => {
         .to.be.an("array")
         .of.length(1);
     });
+    it("undefined", () => {
+      const spec = array(any);
+      const { valid, errors } = spec.validate(undefined) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
     it("wrong", () => {
       const spec = array(string);
       const { valid, errors } = spec.validate([

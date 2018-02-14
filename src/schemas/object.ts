@@ -1,7 +1,12 @@
-import { invalid, valid, test } from "../utils";
+import { invalid, valid, test, mergeResults } from "../utils";
 import { BaseSchema, Schema } from "./base";
 import { ValidationResult, SchemaConstructor, SchemaTest } from "../types";
-import { TypeError, ConstraintError } from "../errors";
+import {
+  TypeError,
+  ConstraintError,
+  ValidationError,
+  MissingError
+} from "../errors";
 import * as equal from "fast-deep-equal";
 
 export type ObjectSpecification<A extends object> = {
@@ -104,17 +109,17 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
   }
 
   strict(): BaseSchema<A> {
-    return this.chain<BaseSchema<A>>(
-      test((obj) => [
-        equal(Object.keys(obj).sort(), Object.keys(this.specification).sort()),
-        () =>
-          new ConstraintError(
-            obj,
-            `contain exactly the keys ${Object.keys(this.specification)}`
-          )
-      ]),
-      BaseSchema as SchemaConstructor<A, BaseSchema<A>>,
-      this.specification
-    );
+    return this.chain<BaseSchema<A>>((obj) => {
+      const additional = Object.keys(obj).filter(
+        (e) => this.specification[e] === undefined
+      );
+      if (additional.length === 0) {
+        return valid(obj);
+      } else {
+        return invalid(
+          new ConstraintError(obj, `not have properties ${additional}`)
+        );
+      }
+    }, BaseSchema);
   }
 }

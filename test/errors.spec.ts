@@ -1,6 +1,11 @@
 import "mocha";
 import { expect } from "chai";
-import { ValidationError, ValueError, ConstraintError } from "../src/errors";
+import {
+  ValidationError,
+  ValueError,
+  ConstraintError,
+  MissingError
+} from "../src/errors";
 // tslint:disable:no-unused-expression
 
 describe("errors", () => {
@@ -55,6 +60,30 @@ describe("errors", () => {
           ".length"
         );
       });
+      it("shows source", () => {
+        error.path = ["a", 1, "b", 2];
+        expect(error.toString("bar")).to.include("bar");
+      });
+    });
+  });
+  describe("MissingError", () => {
+    it("to string", () => {
+      const error = new MissingError("foo");
+      expect(error.toString()).to.include("be defined");
+    });
+    it("to string with path", () => {
+      const error = new MissingError("foo");
+      error.path = ["a", 1];
+      expect(error.toString()).to.include(".a[1]");
+    });
+    it("shows source", () => {
+      const error = new MissingError("foo");
+      expect(error.toString("bar")).to.include("bar");
+    });
+    it("shows source with path", () => {
+      const error = new MissingError("foo");
+      error.path = ["a", 1];
+      expect(error.toString("bar")).to.include("bar.a[1]");
     });
   });
   describe("ConstraintError", () => {

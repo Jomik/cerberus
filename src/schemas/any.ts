@@ -5,10 +5,10 @@ import { MissingError } from "../errors";
 
 export class AnySchema extends BaseSchema<any> {
   constructor(
-    internalValidate: SchemaTest<any> = (obj) => {
+    validate: SchemaTest<any> = (obj) => {
       return obj !== undefined ? valid(obj) : invalid(new MissingError(obj));
     }
   ) {
-    super(internalValidate);
+    super(validate);
   }
 }

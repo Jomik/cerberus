@@ -1,6 +1,6 @@
 import { BaseSchema, Schema } from "./base";
 import { test, invalid, mergeResults, valid, stringify } from "../utils";
-import { TypeError, ConstraintError } from "../errors";
+import { TypeError, ConstraintError, MissingError } from "../errors";
 import {
   InvalidResult,
   ValidationResult,
@@ -33,7 +33,11 @@ export class ArraySchema<A> extends BaseSchema<A[]> {
             valid<A[]>(arr) as ValidationResult<A[]>
           );
         } else {
-          return invalid(new TypeError(obj, "array"));
+          return invalid(
+            obj === undefined
+              ? new MissingError(obj)
+              : new TypeError(obj, "array")
+          );
         }
       });
     } else {

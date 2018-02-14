@@ -1,7 +1,7 @@
 import { test, valid, invalid } from "../utils";
 import { BaseSchema } from "./base";
 import { SchemaTest } from "../types";
-import { TypeError, ConstraintError } from "../errors";
+import { TypeError, ConstraintError, MissingError } from "../errors";
 
 export class NumberSchema<A extends number> extends BaseSchema<A> {
   constructor(
@@ -14,7 +14,9 @@ export class NumberSchema<A extends number> extends BaseSchema<A> {
           return valid(n);
         }
       }
-      return invalid(new TypeError(obj, "number"));
+      return invalid(
+        obj === undefined ? new MissingError(obj) : new TypeError(obj, "number")
+      );
     }
   ) {
     super(validate);

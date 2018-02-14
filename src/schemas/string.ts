@@ -1,7 +1,7 @@
 import { test } from "../utils";
 import { BaseSchema } from "./base";
 import { SchemaTest, ChainMethod } from "../types";
-import { TypeError, ConstraintError } from "../errors";
+import { TypeError, ConstraintError, MissingError } from "../errors";
 import { NumericProperty } from "../constraints/property";
 
 export class StringSchema<A extends string> extends BaseSchema<A> {
@@ -14,12 +14,13 @@ export class StringSchema<A extends string> extends BaseSchema<A> {
   }
 
   constructor(
-    internalValidate: SchemaTest<any> = test((obj) => [
+    validate: SchemaTest<any> = test((obj) => [
       typeof obj === "string",
-      () => new TypeError(obj, "string")
+      () =>
+        obj === undefined ? new MissingError(obj) : new TypeError(obj, "string")
     ])
   ) {
-    super(internalValidate);
+    super(validate);
   }
 
   /**
