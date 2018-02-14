@@ -117,7 +117,12 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
         return valid(obj);
       } else {
         return invalid(
-          new ConstraintError(obj, `not have properties ${additional}`)
+          new ConstraintError(
+            obj,
+            `not have properties ${additional}`,
+            "strict",
+            Object.keys(this.specification)
+          )
         );
       }
     }, BaseSchema);
