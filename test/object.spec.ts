@@ -232,5 +232,16 @@ describe("object", () => {
         .to.be.an("array")
         .of.length(1);
     });
+    it("strict, type", () => {
+      const spec = object({ a: string, b: number }).strict();
+      const { valid, errors } = spec.validate({
+        a: 42,
+        b: "foo"
+      }) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(2);
+    });
   });
 });

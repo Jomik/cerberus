@@ -24,7 +24,7 @@ export class BaseSchema<A> extends Schema<A> {
     ...args: any[]
   ): B {
     return new ctor((obj) => {
-      const result1 = this.internalValidate(obj);
+      const result1 = this.validate(obj);
       if (!result1.valid && result1.errors.some((e) => e.fatal)) {
         return result1;
       }
