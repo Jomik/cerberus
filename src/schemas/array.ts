@@ -1,5 +1,5 @@
 import { BaseSchema, Schema } from "./base";
-import { test, invalid, mergeResults, valid, stringify } from "../utils";
+import { test, invalid, mergeResults, valid } from "../utils";
 import { TypeError, ConstraintError, MissingError } from "../errors";
 import {
   InvalidResult,
@@ -65,7 +65,7 @@ export class ArraySchema<A> extends BaseSchema<A[]> {
     return this.chain<ArraySchema<A>>(
       test((obj) => [
         obj.some(predicate),
-        () => new ConstraintError(obj, description)
+        () => new ConstraintError(obj, description, "some", predicate)
       ]),
       ArraySchema
     );
@@ -76,6 +76,13 @@ export class ArraySchema<A> extends BaseSchema<A[]> {
    * @param element The object to include
    */
   includes(element: A): ArraySchema<A> {
-    return this.some((e) => equal(e, element), `include ${stringify(element)}`);
+    return this.chain<ArraySchema<A>>(
+      test((obj) => [
+        obj.some((e) => equal(e, element)),
+        () =>
+          new ConstraintError(obj, `include ${element}`, "includes", element)
+      ]),
+      ArraySchema
+    );
   }
 }

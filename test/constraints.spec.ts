@@ -15,7 +15,7 @@ describe("NumericProperty", () => {
       StringSchema
     );
   });
-  describe("tests", () => {
+  describe("has", () => {
     it("greater than", () => {
       const { valid } = spec.gt(3).validate("foobar");
       expect(valid).to.be.true;

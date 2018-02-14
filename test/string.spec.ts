@@ -69,18 +69,13 @@ describe("string", () => {
       expect(string.length).to.be.an.instanceof(NumericProperty);
     });
   });
-  describe("tests", () => {
-    describe("includes", () => {
-      it("accepts", () => {
-        const spec = string.includes("bar");
-        const { valid } = spec.validate("foo bar baz");
-        expect(valid).to.be.true;
-      });
-      it("rejects", () => {
-        const spec = string.includes("bar");
-        const { valid } = spec.validate("foo baz");
-        expect(valid).to.be.false;
-      });
+  describe("has", () => {
+    it("includes", () => {
+      const spec = string.includes("bar");
+      const { valid } = spec.validate("foo bar baz");
+      expect(valid).to.be.true;
+      const { valid: invalid } = spec.validate("foo baz");
+      expect(invalid).to.be.false;
     });
   });
 });

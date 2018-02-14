@@ -61,7 +61,7 @@ describe("number", () => {
     });
   });
   describe("has", () => {
-    it("gt", () => {
+    it("greater than", () => {
       const spec = number.gt(5);
       const { valid } = spec.validate(6);
       expect(valid).to.be.true;
@@ -71,7 +71,7 @@ describe("number", () => {
         .to.be.an("array")
         .of.length(1);
     });
-    it("ge", () => {
+    it("greater than or equal to", () => {
       const spec = number.ge(3);
       const { valid } = spec.validate(3);
       expect(valid).to.be.true;
@@ -81,7 +81,7 @@ describe("number", () => {
         .to.be.an("array")
         .of.length(1);
     });
-    it("eq", () => {
+    it("equal to", () => {
       const spec = number.eq(3);
       const { valid } = spec.validate(3);
       expect(valid).to.be.true;
@@ -91,7 +91,7 @@ describe("number", () => {
         .to.be.an("array")
         .of.length(1);
     });
-    it("le", () => {
+    it("less than or equal to", () => {
       const spec = number.le(5);
       const { valid } = spec.validate(5);
       expect(valid).to.be.true;
@@ -101,7 +101,7 @@ describe("number", () => {
         .to.be.an("array")
         .of.length(1);
     });
-    it("lt", () => {
+    it("less than", () => {
       const spec = number.lt(6);
       const { valid } = spec.validate(3);
       expect(valid).to.be.true;

@@ -54,8 +54,14 @@ export class TypeError extends ValidationError {
 }
 
 export class ConstraintError extends ValidationError {
-  constructor(obj: any, public constraint: string, prop?: string) {
-    super(obj, `${constraint}`, prop !== undefined ? `.${prop}` : undefined);
+  constructor(
+    obj: any,
+    message: string,
+    public type: string,
+    public constraint: any,
+    public prop?: string
+  ) {
+    super(obj, message, prop !== undefined ? `.${prop}` : undefined);
   }
 }
 

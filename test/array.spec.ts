@@ -74,12 +74,10 @@ describe("array", () => {
         .of.length(2);
     });
   });
-  describe("has props", () => {
+  describe("has", () => {
     describe("length", () => {
       expect(array(string).length).to.be.an.instanceof(NumericProperty);
     });
-  });
-  describe("tests", () => {
     describe("includes", () => {
       it("accepts", () => {
         const spec = array(string).includes("bar");
@@ -95,6 +93,38 @@ describe("array", () => {
       });
       it("rejects", () => {
         const spec = array(string).includes("bar");
+        const { valid } = spec.validate(["foo", "baz"]);
+        expect(valid).to.be.false;
+        const specObj = array(object({ a: any })).includes({ a: "foo" });
+        const { valid: validObj } = specObj.validate([
+          { a: "bum" },
+          { a: "bar" },
+          { a: "baz" }
+        ]);
+        expect(validObj).to.be.false;
+      });
+    });
+    describe("some", () => {
+      it("accepts", () => {
+        const spec = array(string).some(
+          (e) => e === "bar",
+          "have element equal to bar"
+        );
+        const { valid } = spec.validate(["foo", "bar", "baz"]);
+        expect(valid).to.be.true;
+        const specObj = array(object({ a: any })).includes({ a: "foo" });
+        const { valid: validObj } = specObj.validate([
+          { a: "foo" },
+          { a: "bar" },
+          { a: "baz" }
+        ]);
+        expect(validObj).to.be.true;
+      });
+      it("rejects", () => {
+        const spec = array(string).some(
+          (e) => e === "bar",
+          "have element equal to bar"
+        );
         const { valid } = spec.validate(["foo", "baz"]);
         expect(valid).to.be.false;
         const specObj = array(object({ a: any })).includes({ a: "foo" });

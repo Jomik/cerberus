@@ -30,7 +30,7 @@ export class NumberSchema<A extends number> extends BaseSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj > n,
-        () => new ConstraintError(obj, `be greater than ${n}`)
+        () => new ConstraintError(obj, `be greater than ${n}`, "gt", n)
       ]),
       NumberSchema
     );
@@ -44,7 +44,8 @@ export class NumberSchema<A extends number> extends BaseSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj >= n,
-        () => new ConstraintError(obj, `be greater than or equal to ${n}`)
+        () =>
+          new ConstraintError(obj, `be greater than or equal to ${n}`, "ge", n)
       ]),
       NumberSchema
     );
@@ -58,7 +59,7 @@ export class NumberSchema<A extends number> extends BaseSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj === n,
-        () => new ConstraintError(obj, `be equal to ${n}`)
+        () => new ConstraintError(obj, `be equal to ${n}`, "eq", n)
       ]),
       NumberSchema
     );
@@ -72,7 +73,7 @@ export class NumberSchema<A extends number> extends BaseSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj <= n,
-        () => new ConstraintError(obj, `be less than or equal to ${n}`)
+        () => new ConstraintError(obj, `be less than or equal to ${n}`, "le", n)
       ]),
       NumberSchema
     );
@@ -86,7 +87,7 @@ export class NumberSchema<A extends number> extends BaseSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj < n,
-        () => new ConstraintError(obj, `be less than ${n}`)
+        () => new ConstraintError(obj, `be less than ${n}`, "lt", n)
       ]),
       NumberSchema
     );
@@ -101,7 +102,11 @@ export class NumberSchema<A extends number> extends BaseSchema<A> {
     return this.chain<NumberSchema<A>>(
       test((obj) => [
         obj >= low && obj <= high,
-        () => new ConstraintError(obj, `be between ${low} and ${high}`)
+        () =>
+          new ConstraintError(obj, `be between ${low} and ${high}`, "between", [
+            low,
+            high
+          ])
       ]),
       NumberSchema
     );

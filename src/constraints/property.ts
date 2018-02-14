@@ -17,7 +17,8 @@ export class NumericProperty<A, B extends BaseSchema<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] > n,
-        () => new ConstraintError(obj, `be greater than ${n}`, this.prop)
+        () =>
+          new ConstraintError(obj, `be greater than ${n}`, "gt", n, this.prop)
       ]),
       this.ctor
     );
@@ -35,6 +36,8 @@ export class NumericProperty<A, B extends BaseSchema<A>> {
           new ConstraintError(
             obj,
             `be greater than or equal to ${n}`,
+            "ge",
+            n,
             this.prop
           )
       ]),
@@ -50,7 +53,7 @@ export class NumericProperty<A, B extends BaseSchema<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] === n,
-        () => new ConstraintError(obj, `be equal to ${n}`, this.prop)
+        () => new ConstraintError(obj, `be equal to ${n}`, "eq", n, this.prop)
       ]),
       this.ctor
     );
@@ -65,7 +68,13 @@ export class NumericProperty<A, B extends BaseSchema<A>> {
       test((obj) => [
         obj[this.prop] <= n,
         () =>
-          new ConstraintError(obj, `be less than or equal to ${n}`, this.prop)
+          new ConstraintError(
+            obj,
+            `be less than or equal to ${n}`,
+            "le",
+            n,
+            this.prop
+          )
       ]),
       this.ctor
     );
@@ -79,7 +88,7 @@ export class NumericProperty<A, B extends BaseSchema<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] < n,
-        () => new ConstraintError(obj, `be less than ${n}`, this.prop)
+        () => new ConstraintError(obj, `be less than ${n}`, "lt", n, this.prop)
       ]),
       this.ctor
     );
@@ -95,7 +104,13 @@ export class NumericProperty<A, B extends BaseSchema<A>> {
       test((obj) => [
         obj[this.prop] >= low && obj[this.prop] <= high,
         () =>
-          new ConstraintError(obj, `be between ${low} and ${high}`, this.prop)
+          new ConstraintError(
+            obj,
+            `be between ${low} and ${high}`,
+            "between",
+            [low, high],
+            this.prop
+          )
       ]),
       this.ctor
     );

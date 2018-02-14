@@ -88,15 +88,21 @@ describe("errors", () => {
   });
   describe("ConstraintError", () => {
     it("has correct name", () => {
-      const error = new ConstraintError("foo", "greater than 4");
+      const error = new ConstraintError("foo", "greater than 4", "gt", 4);
       expect(error.name).to.equal("ConstraintError");
     });
     it("shows constraint", () => {
-      const error = new ConstraintError("foo", "greater than 4");
+      const error = new ConstraintError("foo", "greater than 4", "gt", 4);
       expect(error.toString()).to.include("greater than 4");
     });
     it("shows property", () => {
-      const error = new ConstraintError("foo", "greater than 4", "length");
+      const error = new ConstraintError(
+        "foo",
+        "greater than 4",
+        "gt",
+        4,
+        "length"
+      );
       expect(error.toString()).to.include(".length");
     });
   });

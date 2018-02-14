@@ -54,52 +54,6 @@ describe("object", () => {
       expect(result.valid).to.be.true;
       expect(result.obj).to.deep.equal({ a: { b: 42 }, c: { d: "foo" } });
     });
-    it("references", () => {
-      const spec = object({
-        a: number.default(20),
-        b: (o) => number.lt(o.a)
-      });
-      const { valid } = spec.validate({
-        b: 10
-      });
-      expect(valid).to.be.true;
-    });
-    it("nested references out", () => {
-      const spec = object({
-        a: number.default(42),
-        b: (o) =>
-          object({
-            c: number.lt(o.a)
-          })
-      });
-      const { valid } = spec.validate({ b: { c: 10 } });
-      expect(valid).to.be.true;
-    });
-    it("nested references in", () => {
-      const spec = object({
-        a: (o) => number.lt(o.b.c),
-        b: object({
-          c: number.default(42)
-        })
-      });
-      const { valid } = spec.validate({ a: 10 });
-      expect(valid).to.be.true;
-    });
-    it("extend", () => {
-      const spec = object({ a: string, b: string }).extend({ c: string });
-      const { valid } = spec.validate({ a: "foo", b: "bar", c: "baz" });
-      expect(valid).to.be.true;
-    });
-    it("extend overrides", () => {
-      const spec = object({ a: string, b: string }).extend({ b: number });
-      const { valid } = spec.validate({ a: "foo", b: 42 });
-      expect(valid).to.be.true;
-    });
-    it("strict", () => {
-      const spec = object({ a: string, b: number }).strict();
-      const { valid } = spec.validate({ b: 42, a: "foo" });
-      expect(valid).to.be.true;
-    });
   });
   describe("rejects", () => {
     it("<string>", () => {
@@ -161,17 +115,6 @@ describe("object", () => {
         .to.be.an("array")
         .of.length(1);
     });
-    it("extend overrides", () => {
-      const spec = object({ a: string, b: string }).extend({ b: number });
-      const { valid, errors } = spec.validate({
-        a: "foo",
-        b: "bar"
-      }) as InvalidResult;
-      expect(valid).to.be.false;
-      expect(errors)
-        .to.be.an("array")
-        .of.length(1);
-    });
     it("wrong objects", () => {
       const spec = object({
         a: any,
@@ -203,41 +146,107 @@ describe("object", () => {
         .to.be.an("array")
         .of.length(2);
     });
-    it("strict, missing", () => {
-      const spec = object({
-        a: string,
-        b: number
-      }).strict();
-      const { valid, errors } = spec.validate({
-        a: "bar"
-      }) as InvalidResult;
-      expect(valid).to.be.false;
-      expect(errors)
-        .to.be.an("array")
-        .of.length(1);
+  });
+  describe("has", () => {
+    describe("references", () => {
+      it("accepts", () => {
+        const spec = object({
+          a: number.default(20),
+          b: (o) => number.lt(o.a)
+        });
+        const { valid } = spec.validate({
+          b: 10
+        });
+        expect(valid).to.be.true;
+      });
+      it("nested out", () => {
+        const spec = object({
+          a: number.default(42),
+          b: (o) =>
+            object({
+              c: number.lt(o.a)
+            })
+        });
+        const { valid } = spec.validate({ b: { c: 10 } });
+        expect(valid).to.be.true;
+      });
+      it("nested in", () => {
+        const spec = object({
+          a: (o) => number.lt(o.b.c),
+          b: object({
+            c: number.default(42)
+          })
+        });
+        const { valid } = spec.validate({ a: 10 });
+        expect(valid).to.be.true;
+      });
     });
-    it("strict, additional", () => {
-      const spec = object({ a: string, b: number, d: any.optional() }).strict();
-      const { valid, errors } = spec.validate({
-        a: "foo",
-        b: 42,
-        c: "baz"
-      }) as InvalidResult;
-      expect(valid).to.be.false;
-      expect(errors)
-        .to.be.an("array")
-        .of.length(1);
+    describe("extend", () => {
+      it("accepts", () => {
+        const spec = object({ a: string, b: string }).extend({ c: string });
+        const { valid } = spec.validate({ a: "foo", b: "bar", c: "baz" });
+        expect(valid).to.be.true;
+      });
+      it("overrides", () => {
+        const spec = object({ a: string, b: string }).extend({ b: number });
+        const { valid } = spec.validate({ a: "foo", b: 42 });
+        expect(valid).to.be.true;
+        const { valid: invalid, errors } = spec.validate({
+          a: "foo",
+          b: "bar"
+        }) as InvalidResult;
+        expect(invalid).to.be.false;
+        expect(errors)
+          .to.be.an("array")
+          .of.length(1);
+      });
     });
-    it("strict, type", () => {
-      const spec = object({ a: string, b: number }).strict();
-      const { valid, errors } = spec.validate({
-        a: 42,
-        b: "foo"
-      }) as InvalidResult;
-      expect(valid).to.be.false;
-      expect(errors)
-        .to.be.an("array")
-        .of.length(2);
+    describe("strict", () => {
+      it("accepts", () => {
+        const spec = object({ a: string, b: number }).strict();
+        const { valid } = spec.validate({ b: 42, a: "foo" });
+        expect(valid).to.be.true;
+      });
+      it("missing", () => {
+        const spec = object({
+          a: string,
+          b: number
+        }).strict();
+        const { valid, errors } = spec.validate({
+          a: "bar"
+        }) as InvalidResult;
+        expect(valid).to.be.false;
+        expect(errors)
+          .to.be.an("array")
+          .of.length(1);
+      });
+      it("additional", () => {
+        const spec = object({
+          a: string,
+          b: number,
+          d: any.optional()
+        }).strict();
+        const { valid, errors } = spec.validate({
+          a: "foo",
+          b: 42,
+          c: "baz"
+        }) as InvalidResult;
+        expect(valid).to.be.false;
+        expect(errors)
+          .to.be.an("array")
+          .of.length(1);
+      });
+      it("type", () => {
+        const spec = object({ a: string, b: number }).strict();
+        const { valid, errors } = spec.validate({
+          a: 42,
+          b: "foo"
+        }) as InvalidResult;
+        expect(valid).to.be.false;
+        expect(errors)
+          .to.be.an("array")
+          .of.length(2);
+      });
     });
   });
 });

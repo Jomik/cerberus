@@ -31,7 +31,7 @@ export class StringSchema<A extends string> extends BaseSchema<A> {
     return this.chain<StringSchema<A>>(
       test((obj) => [
         obj.includes(str),
-        () => new ConstraintError(obj, `include ${str}`)
+        () => new ConstraintError(obj, `include ${str}`, "includes", str)
       ]),
       StringSchema
     );
