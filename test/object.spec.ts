@@ -3,6 +3,9 @@ import { expect } from "chai";
 import { object, any, number, string } from "../src";
 import { InvalidResult, ValidResult } from "../src/types";
 import { array } from "../src/index";
+import { ObjectSchema, ObjectSpecification } from "../src/schemas/object";
+import { StringSchema } from "../src/schemas/string";
+import { Schema } from "../src/schemas/base";
 // tslint:disable:no-unused-expression
 
 describe("object", () => {
@@ -97,10 +100,10 @@ describe("object", () => {
     });
     it("recursive", () => {
       const spec = object({ a: string });
-      const recursiveSpec = spec.merge({ b: spec });
-      const { valid } = spec.validate({
+      const rec = spec.merge({ b: spec });
+      const { valid } = rec.validate({
         a: "foo",
-        b: { a: "bar", b: { a: "baz" } }
+        b: { a: "bar" }
       });
       expect(valid).to.be.true;
     });
@@ -231,6 +234,17 @@ describe("object", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
+    });
+    it("strict, type", () => {
+      const spec = object({ a: string, b: number }).strict();
+      const { valid, errors } = spec.validate({
+        a: 42,
+        b: "foo"
+      }) as InvalidResult;
+      expect(valid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(2);
     });
   });
 });
