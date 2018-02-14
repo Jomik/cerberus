@@ -4,7 +4,8 @@ import {
   ValidationError,
   ValueError,
   ConstraintError,
-  MissingError
+  MissingError,
+  AlternativesError
 } from "../src/errors";
 // tslint:disable:no-unused-expression
 
@@ -120,6 +121,23 @@ describe("errors", () => {
     it("shows value", () => {
       const error = new ValueError("foo", ["bar"]);
       expect(error.toString()).to.include("bar");
+    });
+  });
+  describe("AlternativesError", () => {
+    const first = [new ValidationError("foo", "bar")];
+    const second = [
+      new ValidationError("foo", "baz"),
+      new ValidationError("foo", "buz")
+    ];
+    const error = new AlternativesError("foo", [first, second]);
+    it("includes child", () => {
+      error.toString().includes(first[0].toString());
+    });
+    it("includes multiple and path", () => {
+      error.path = ["a"];
+      error.toString().includes(".a");
+      error.toString().includes(second[0].toString());
+      error.toString().includes(second[1].toString());
     });
   });
 });

@@ -80,3 +80,19 @@ export class ValueError extends ValidationError {
     this.values = values;
   }
 }
+
+export class AlternativesError extends ValidationError {
+  constructor(obj: any, public errors: ValidationError[][]) {
+    super(obj, "match a schema");
+  }
+
+  toString(source?: string): string {
+    const prefix =
+      this.path.length > 0
+        ? `${this.pathToString(source)}`
+        : source || stringify(this.obj);
+    return `${prefix} must fix any set of the following errors:\n(${this.errors
+      .map((earr) => earr.map((e) => e.toString(source)).join(", "))
+      .join("),\n(")})`;
+  }
+}

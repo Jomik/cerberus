@@ -2,6 +2,10 @@ import "mocha";
 import { expect } from "chai";
 import { oneOf, is } from "../src";
 import { InvalidResult } from "../src/types";
+import { alternatives } from "../src/functions";
+import { string, number } from "../src/index";
+import { StringSchema } from "../src/schemas/string";
+import { NumberSchema } from "../src/schemas/number";
 // tslint:disable:no-unused-expression
 
 describe("oneOf", () => {
@@ -121,5 +125,17 @@ describe("is", () => {
         .to.be.an("array")
         .of.length(1);
     });
+  });
+});
+
+describe("alternatives", () => {
+  it("accepts", () => {
+    const spec = alternatives(string, number);
+    expect(spec.validate("foo").valid).to.be.true;
+    expect(spec.validate(42).valid).to.be.true;
+  });
+  it("rejects", () => {
+    const spec = alternatives(string, number);
+    expect(spec.validate([]).valid).to.be.false;
   });
 });
