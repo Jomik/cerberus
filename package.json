@@ -1,5 +1,5 @@
 {
-  "name": "object-validator",
+  "name": "cerberus",
   "version": "0.0.1",
   "description": "Object Validator with Typescript support",
   "main": "dist/index.js",
@@ -23,15 +23,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Jomik/object-validator.git"
+    "url": "git+https://github.com/Jomik/cerberus.git"
   },
   "keywords": ["typescript", "validate", "validator", "validation"],
   "author": "Jonas Damtoft",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Jomik/object-validator/issues"
+    "url": "https://github.com/Jomik/cerberus/issues"
   },
-  "homepage": "https://github.com/Jomik/object-validator#readme",
+  "homepage": "https://github.com/Jomik/cerberus#readme",
   "devDependencies": {
     "@types/chai": "^4.1.2",
     "@types/mocha": "^2.2.47",
