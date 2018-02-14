@@ -103,23 +103,17 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
     return new ObjectSchema<A & B>(this.internalValidate, mergedSpec);
   }
 
-  strict(): BaseSchema<A> {
-    return this.chain<BaseSchema<A>>(
-      (obj) => {
-        if (
-          equal(Object.keys(obj).sort(), Object.keys(this.specification).sort())
-        ) {
-          return this.validate(obj);
-        } else {
-          return invalid(
-            new ConstraintError(
-              obj,
-              `contain exactly the keys ${Object.keys(this.specification)}`
-            )
-          );
-        }
-      },
-      BaseSchema as SchemaConstructor<A, BaseSchema<A>>,
+  strict(): ObjectSchema<A> {
+    return this.chain<ObjectSchema<A>>(
+      test((obj) => [
+        equal(Object.keys(obj).sort(), Object.keys(this.specification).sort()),
+        () =>
+          new ConstraintError(
+            obj,
+            `contain exactly the keys ${Object.keys(this.specification)}`
+          )
+      ]),
+      ObjectSchema as SchemaConstructor<A, ObjectSchema<A>>,
       this.specification
     );
   }
