@@ -1,5 +1,6 @@
-# Typescript object validator (Unnamed)
+# Cerberus
 
+_Thé typescript object validator_ \
 Experimental, work in progress.
 
 [![Build Status](https://travis-ci.org/Jomik/object-validator.svg?branch=master)](https://travis-ci.org/Jomik/object-validator)
@@ -10,7 +11,7 @@ Here is a basic example.
 
 ```ts
 // We can import the schema `types` to match the types of Typescript.
-import { object, any, string, number } from "...";
+import { object, any, string, number } from "cerberus";
 // Create our schema
 const schema = object({
   a: string,
@@ -74,8 +75,30 @@ type ObjectSpecification<A extends object> = {
 
 ## Installation
 
+_Currently waiting to publish on npm_
+
 ```
-npm install --save ...
+npm install --save github:jomik/cerberus
+```
+
+## Examples
+
+```ts
+import { object, array, string, number } from "cerberus";
+
+const person = object({ name: string, id: number });
+const schema = person.extend({
+  mother: person,
+  father: person,
+  children: array(person)
+});
+const result = schema.validate({
+  name: "foo jr bar",
+  id: 3,
+  mother: { name: "baz buz bar", id: 1 },
+  father: { name: "foo bar", id: 2 },
+  children: [{ name: "bum bar", id: 4 }, { name: "baz bar", id: 5 }]
+});
 ```
 
 ## Contribute

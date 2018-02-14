@@ -96,7 +96,7 @@ export class ObjectSchema<A extends object> extends BaseSchema<A> {
     return result;
   }
 
-  merge<B extends object>(
+  extend<B extends object>(
     specification: ObjectSpecification<B>
   ): ObjectSchema<A & B> {
     const mergedSpec = Object.assign(
