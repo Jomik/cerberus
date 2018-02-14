@@ -4,9 +4,9 @@ import { SchemaTest, ChainMethod } from "../types";
 import { TypeError, ConstraintError, MissingError } from "../errors";
 import { NumericProperty } from "../constraints/property";
 
-export class StringSchema<A extends string> extends BaseSchema<A> {
-  get length(): NumericProperty<A, StringSchema<A>> {
-    return new NumericProperty<A, StringSchema<A>>(
+export class StringSchema extends BaseSchema<string> {
+  get length(): NumericProperty<string, StringSchema> {
+    return new NumericProperty<string, StringSchema>(
       "length",
       this.chain.bind(this),
       StringSchema
@@ -14,7 +14,7 @@ export class StringSchema<A extends string> extends BaseSchema<A> {
   }
 
   constructor(
-    validate: SchemaTest<any> = test((obj) => [
+    validate: SchemaTest<string> = test((obj: any) => [
       typeof obj === "string",
       () =>
         obj === undefined ? new MissingError(obj) : new TypeError(obj, "string")
@@ -27,8 +27,8 @@ export class StringSchema<A extends string> extends BaseSchema<A> {
    * Require the string to include str
    * @param str The required string
    */
-  includes(str: string): StringSchema<A> {
-    return this.chain<StringSchema<A>>(
+  includes(str: string): StringSchema {
+    return this.chain<StringSchema>(
       test((obj) => [
         obj.includes(str),
         () => new ConstraintError(obj, `include ${str}`, "includes", str)

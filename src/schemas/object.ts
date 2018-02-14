@@ -1,3 +1,5 @@
+import * as equal from "fast-deep-equal";
+
 import { invalid, valid, test, mergeResults } from "../utils";
 import { BaseSchema, Schema } from "./base";
 import { ValidationResult, SchemaConstructor, SchemaTest } from "../types";
@@ -7,7 +9,6 @@ import {
   ValidationError,
   MissingError
 } from "../errors";
-import * as equal from "fast-deep-equal";
 
 export type ObjectSpecification<A extends object> = {
   [k in keyof A]: Schema<A[k]> | ((obj: A) => Schema<A[k]>)
