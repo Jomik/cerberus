@@ -3,9 +3,9 @@
 _Thé typescript object validator_ \
 Experimental, work in progress.
 
-[![Build Status](https://travis-ci.org/Jomik/object-validator.svg?branch=master)](https://travis-ci.org/Jomik/object-validator)
-[![codecov](https://codecov.io/gh/jomik/object-validator/branch/master/graph/badge.svg)](https://codecov.io/gh/jomik/object-validator)
-[![Greenkeeper badge](https://badges.greenkeeper.io/Jomik/object-validator.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/Jomik/cerberus.svg?branch=master)](https://travis-ci.org/Jomik/cerberus)
+[![codecov](https://codecov.io/gh/jomik/cerberus/branch/master/graph/badge.svg)](https://codecov.io/gh/jomik/cerberus)
+[![Greenkeeper badge](https://badges.greenkeeper.io/Jomik/cerberus.svg)](https://greenkeeper.io/)
 
 Here is a basic example.
 
