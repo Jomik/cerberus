@@ -70,6 +70,20 @@ describe("string", () => {
     });
   });
   describe("has", () => {
+    it("matches", () => {
+      const spec = string.matches(/^[a-z]+$/);
+      const { valid } = spec.validate("foo");
+      expect(valid).to.be.true;
+      const { valid: invalid } = spec.validate("@foo$");
+      expect(invalid).to.be.false;
+    });
+    it("alphanum", () => {
+      const spec = string.alphanum();
+      const { valid } = spec.validate("foo");
+      expect(valid).to.be.true;
+      const { valid: invalid } = spec.validate("fOo bAr");
+      expect(invalid).to.be.false;
+    });
     it("includes", () => {
       const spec = string.includes("bar");
       const { valid } = spec.validate("foo bar baz");

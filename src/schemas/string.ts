@@ -24,6 +24,33 @@ export class StringSchema extends BaseSchema<string> {
   }
 
   /**
+   * Require the string to match exp
+   * @param exp The expression to test against
+   */
+  matches(exp: RegExp): StringSchema {
+    return this.chain<StringSchema>(
+      test((obj) => [
+        exp.test(obj),
+        () =>
+          new ConstraintError(
+            obj,
+            `match regular expression ${exp}`,
+            "regex",
+            exp
+          )
+      ]),
+      StringSchema
+    );
+  }
+
+  /**
+   * Require the string to be alphanumeric
+   */
+  alphanum(): StringSchema {
+    return this.matches(/^[a-z0-9]*$/i);
+  }
+
+  /**
    * Require the string to include str
    * @param str The required string
    */
