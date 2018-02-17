@@ -58,7 +58,7 @@ export class ConstraintError extends ValidationError {
     obj: any,
     message: string,
     public type: string,
-    public constraint: any,
+    public constraint?: any,
     public prop?: string
   ) {
     super(obj, message, prop !== undefined ? `.${prop}` : undefined);

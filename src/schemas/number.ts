@@ -23,6 +23,47 @@ export class NumberSchema extends BaseSchema<number> {
   }
 
   /**
+   * Require the number to be an integer
+   */
+  integer(): NumberSchema {
+    return this.chain<NumberSchema>(
+      test((obj) => [
+        Number.isInteger(obj),
+        () => new ConstraintError(obj, "be an integer", "integer")
+      ]),
+      NumberSchema
+    );
+  }
+
+  /**
+   * Require the number to be a multiple of n
+   * @param n The base
+   */
+  multiple(n: number): NumberSchema {
+    return this.chain<NumberSchema>(
+      test((obj) => [
+        Number.isInteger(obj / n),
+        () => new ConstraintError(obj, `be a multiple of ${n}`, "multiple", n)
+      ]),
+      NumberSchema
+    );
+  }
+
+  /**
+   * Require the number to be negative
+   */
+  negative(): NumberSchema {
+    return this.lt(0);
+  }
+
+  /**
+   * Require the number to be positive
+   */
+  positive(): NumberSchema {
+    return this.gt(0);
+  }
+
+  /**
    * Require the number to be greater than n
    * @param n The bound
    */

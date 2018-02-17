@@ -84,7 +84,10 @@ Returns type `any` when validated
 
 Returns type `number` when validated \
  `#gt/ge/eq/le/lt(n: number)` Requires number to satisfy the equality \
- `#between(low: number, high: number)` Requires the number to be between `low` and `high`, inclusive
+ `#between(low: number, high: number)` Requires the number to be between `low` and `high`, inclusive \
+ `#negative()` Requires the number to be negative \
+ `#positive()` Requires the number to be positive \
+ `#multiple(n: number)` Requires the number to be a multiple of `n`
 
 #### `StringSchema`
 

@@ -61,6 +61,46 @@ describe("number", () => {
     });
   });
   describe("has", () => {
+    it("negative", () => {
+      const spec = number.negative();
+      const { valid } = spec.validate(-100);
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec.validate(42) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("positive", () => {
+      const spec = number.positive();
+      const { valid } = spec.validate(100);
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec.validate(-42) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("multiple", () => {
+      const spec = number.multiple(3.12);
+      const { valid } = spec.validate(3.12 * 1231234);
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec.validate(42) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
+    it("integer", () => {
+      const spec = number.integer();
+      const { valid } = spec.validate(42);
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec.validate(42.1) as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
     it("greater than", () => {
       const spec = number.gt(5);
       const { valid } = spec.validate(6);
