@@ -125,7 +125,8 @@ type ObjectSpecification<A extends object> = {
 `validate(schema: Schema, obj: any)` Validates object against schema \
 `is(a: any)` Requires the value to be exactly `a` \
 `oneOf(...values: any[])` Requires the value to be one of the arguments \
-`alternatives(...schemas: BaseSchema)` Requires the value to satisfy one of the arguments
+`alternatives(...schemas: BaseSchema)` Requires the value to satisfy one of the arguments \
+`forbidden` Requires the object to be undefined, useful for object keys
 
 ## Contribute
 

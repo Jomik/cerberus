@@ -1,9 +1,15 @@
 import "mocha";
 import { expect } from "chai";
-import { oneOf, is } from "../src";
 import { InvalidResult } from "../src/types";
-import { alternatives } from "../src/functions";
-import { string, number } from "../src/index";
+import {
+  oneOf,
+  is,
+  string,
+  number,
+  object,
+  alternatives,
+  forbidden
+} from "../src";
 import { StringSchema } from "../src/schemas/string";
 import { NumberSchema } from "../src/schemas/number";
 // tslint:disable:no-unused-expression
@@ -137,5 +143,18 @@ describe("alternatives", () => {
   it("rejects", () => {
     const spec = alternatives(string, number);
     expect(spec.validate([]).valid).to.be.false;
+  });
+});
+
+describe("forbidden", () => {
+  it("accepts", () => {
+    const spec = object({ a: forbidden, b: string }).strict();
+    const { valid } = spec.validate({ b: "foo" });
+    expect(valid).to.be.true;
+  });
+  it("rejects", () => {
+    const spec = object({ a: forbidden, b: string });
+    const { valid: invalid } = spec.strict().validate({ a: "foo", b: "bar" });
+    expect(invalid).to.be.false;
   });
 });

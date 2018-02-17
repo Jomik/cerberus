@@ -1,5 +1,5 @@
 import * as equal from "fast-deep-equal";
-import { BaseSchema } from "./schemas/base";
+import { BaseSchema, Schema } from "./schemas/base";
 import { test, valid, invalid } from "./utils";
 import { string, number } from "./index";
 import {
@@ -85,6 +85,10 @@ export function is<A>(a: A): BaseSchema<A> {
     test((obj) => [equal(obj, a), () => new ValueError(obj, [a])])
   );
 }
+
+export const forbidden: Schema<undefined> = new Schema<undefined>(
+  test((obj) => [obj === undefined, () => new ValueError(obj, [undefined])])
+);
 
 export function alternatives<A, B, C, D, E, F, G, H, I>(
   a: BaseSchema<A>,
