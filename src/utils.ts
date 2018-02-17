@@ -1,5 +1,5 @@
 import {
-  SchemaTest,
+  TypeTest,
   ValidationResult,
   InvalidResult,
   ValidResult
@@ -15,7 +15,7 @@ export function invalid(...errors: ValidationError[]): InvalidResult {
 
 export function test<A>(
   resultFunc: (obj: A) => [boolean, () => ValidationError]
-): SchemaTest<A> {
+): TypeTest<A> {
   return (obj) => {
     const [result, error] = resultFunc(obj);
     return result ? valid<A>(obj) : invalid(error());

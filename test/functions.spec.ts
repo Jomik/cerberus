@@ -10,8 +10,8 @@ import {
   alternatives,
   forbidden
 } from "../src";
-import { StringSchema } from "../src/schemas/string";
-import { NumberSchema } from "../src/schemas/number";
+import { StringType } from "../src/types/string";
+import { NumberType } from "../src/types/number";
 // tslint:disable:no-unused-expression
 
 describe("oneOf", () => {

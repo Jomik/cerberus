@@ -1,8 +1,8 @@
-import { SchemaTest, ValidationResult, SchemaConstructor } from "../types";
+import { TypeTest, ValidationResult, TypeConstructor } from "../types";
 import { mergeResults, valid } from "../utils";
 
-export class Schema<A> {
-  constructor(protected internalValidate: SchemaTest<A>) {}
+export class Type<A> {
+  constructor(protected internalValidate: TypeTest<A>) {}
 
   /**
    * Validate object against schema
@@ -13,14 +13,14 @@ export class Schema<A> {
   }
 }
 
-export class BaseSchema<A> extends Schema<A> {
-  constructor(internalValidate: SchemaTest<A>) {
+export class BaseType<A> extends Type<A> {
+  constructor(internalValidate: TypeTest<A>) {
     super(internalValidate);
   }
 
-  protected chain<B extends BaseSchema<A>>(
-    next: SchemaTest<A>,
-    ctor: SchemaConstructor<A, B>,
+  protected chain<B extends BaseType<A>>(
+    next: TypeTest<A>,
+    ctor: TypeConstructor<A, B>,
     ...args: any[]
   ): B {
     return new ctor((obj) => {
@@ -36,8 +36,8 @@ export class BaseSchema<A> extends Schema<A> {
   /**
    * Mark as optional
    */
-  optional(): Schema<A | undefined> {
-    return new Schema(
+  optional(): Type<A | undefined> {
+    return new Type(
       (obj) => (obj === undefined ? valid(undefined) : this.validate(obj))
     );
   }
@@ -46,8 +46,8 @@ export class BaseSchema<A> extends Schema<A> {
    * Set a default value to use in place of an undefined object
    * @param value The default value
    */
-  default<B>(value: B): Schema<A | B> {
-    return new Schema(
+  default<B>(value: B): Type<A | B> {
+    return new Type(
       (obj) => (obj === undefined ? valid(value) : this.validate(obj))
     );
   }

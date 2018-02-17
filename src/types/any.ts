@@ -1,11 +1,11 @@
-import { SchemaTest } from "../types";
-import { BaseSchema } from "./base";
+import { TypeTest } from "../types";
+import { BaseType } from "./base";
 import { valid, invalid } from "../utils";
 import { MissingError } from "../errors";
 
-export class AnySchema extends BaseSchema<any> {
+export class AnyType extends BaseType<any> {
   constructor(
-    validate: SchemaTest<any> = (obj) => {
+    validate: TypeTest<any> = (obj) => {
       return obj !== undefined ? valid(obj) : invalid(new MissingError(obj));
     }
   ) {

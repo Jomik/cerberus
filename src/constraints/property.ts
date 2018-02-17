@@ -1,12 +1,12 @@
-import { ChainMethod, SchemaConstructor } from "../types";
+import { ChainMethod, TypeConstructor } from "../types";
 import { ConstraintError } from "../errors";
-import { BaseSchema } from "../schemas/base";
+import { BaseType } from "../types/base";
 import { test } from "../utils";
-export class NumericProperty<A, B extends BaseSchema<A>> {
+export class NumericProperty<A, B extends BaseType<A>> {
   constructor(
     private prop: string,
     private chain: ChainMethod<A, B>,
-    private ctor: SchemaConstructor<A, B>
+    private ctor: TypeConstructor<A, B>
   ) {}
 
   /**

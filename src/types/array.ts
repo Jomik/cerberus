@@ -1,18 +1,18 @@
-import { BaseSchema, Schema } from "./base";
+import { BaseType, Type } from "./base";
 import { test, invalid, mergeResults, valid } from "../utils";
 import { TypeError, ConstraintError, MissingError } from "../errors";
 import {
   InvalidResult,
   ValidationResult,
-  SchemaTest,
-  SchemaConstructor
+  TypeTest,
+  TypeConstructor
 } from "../types";
 import { NumericProperty } from "../constraints/property";
 import * as equal from "fast-deep-equal";
 
-export class ArraySchema<A> extends BaseSchema<A[]> {
-  constructor(arg: SchemaTest<A[]> | Schema<A>) {
-    if (arg instanceof Schema) {
+export class ArrayType<A> extends BaseType<A[]> {
+  constructor(arg: TypeTest<A[]> | Type<A>) {
+    if (arg instanceof Type) {
       super((obj) => {
         if (Array.isArray(obj)) {
           const arr: A[] = [];
@@ -45,11 +45,11 @@ export class ArraySchema<A> extends BaseSchema<A[]> {
     }
   }
 
-  get length(): NumericProperty<A[], ArraySchema<A>> {
-    return new NumericProperty<A[], ArraySchema<A>>(
+  get length(): NumericProperty<A[], ArrayType<A>> {
+    return new NumericProperty<A[], ArrayType<A>>(
       "length",
       this.chain.bind(this),
-      ArraySchema
+      ArrayType
     );
   }
 
@@ -58,16 +58,13 @@ export class ArraySchema<A> extends BaseSchema<A[]> {
    * @param predicate The predicate to satisfy
    * @param description A description of the predicate, prefixed "must "
    */
-  some(
-    predicate: (element: A) => boolean,
-    description: string
-  ): ArraySchema<A> {
-    return this.chain<ArraySchema<A>>(
+  some(predicate: (element: A) => boolean, description: string): ArrayType<A> {
+    return this.chain<ArrayType<A>>(
       test((obj) => [
         obj.some(predicate),
         () => new ConstraintError(obj, description, "some", predicate)
       ]),
-      ArraySchema
+      ArrayType
     );
   }
 
@@ -75,14 +72,14 @@ export class ArraySchema<A> extends BaseSchema<A[]> {
    * Require the array to include object
    * @param element The object to include
    */
-  includes(element: A): ArraySchema<A> {
-    return this.chain<ArraySchema<A>>(
+  includes(element: A): ArrayType<A> {
+    return this.chain<ArrayType<A>>(
       test((obj) => [
         obj.some((e) => equal(e, element)),
         () =>
           new ConstraintError(obj, `include ${element}`, "includes", element)
       ]),
-      ArraySchema
+      ArrayType
     );
   }
 }

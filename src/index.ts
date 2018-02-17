@@ -1,29 +1,29 @@
-import { AnySchema } from "./schemas/any";
-import { StringSchema } from "./schemas/string";
-import { NumberSchema } from "./schemas/number";
-import { ObjectSchema, ObjectSpecification } from "./schemas/object";
-import { BaseSchema } from "./schemas/base";
+import { AnyType } from "./types/any";
+import { StringType } from "./types/string";
+import { NumberType } from "./types/number";
+import { ObjectType, ObjectSchema } from "./types/object";
+import { BaseType } from "./types/base";
 import { ValidationResult } from "./types";
-import { ArraySchema } from "./schemas/array";
+import { ArrayType } from "./types/array";
 export * from "./functions";
 // tslint:disable:variable-name
 
 export function validate<A>(
-  schema: BaseSchema<A>,
+  schema: BaseType<A>,
   obj: any
 ): ValidationResult<A> {
   return schema.validate(obj);
 }
 
-export const any = new AnySchema();
-export const string = new StringSchema();
-export const number = new NumberSchema();
+export const any = new AnyType();
+export const string = new StringType();
+export const number = new NumberType();
 
-export function array<A>(schema: BaseSchema<A>) {
-  return new ArraySchema(schema);
+export function array<A>(schema: BaseType<A>): ArrayType<A> {
+  return new ArrayType<A>(schema);
 }
 export function object<A extends object>(
-  specification: ObjectSpecification<A>
-) {
-  return new ObjectSchema(undefined, specification);
+  specification: ObjectSchema<A>
+): ObjectType<A> {
+  return new ObjectType(undefined, specification);
 }

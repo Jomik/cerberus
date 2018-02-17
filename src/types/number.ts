@@ -1,11 +1,11 @@
 import { test, valid, invalid } from "../utils";
-import { BaseSchema } from "./base";
-import { SchemaTest } from "../types";
+import { BaseType } from "./base";
+import { TypeTest } from "../types";
 import { TypeError, ConstraintError, MissingError } from "../errors";
 
-export class NumberSchema extends BaseSchema<number> {
+export class NumberType extends BaseType<number> {
   constructor(
-    validate: SchemaTest<number> = (obj: any) => {
+    validate: TypeTest<number> = (obj: any) => {
       if (typeof obj === "number") {
         return valid(obj);
       } else if (typeof obj === "string") {
@@ -25,13 +25,13 @@ export class NumberSchema extends BaseSchema<number> {
   /**
    * Require the number to be an integer
    */
-  integer(): NumberSchema {
-    return this.chain<NumberSchema>(
+  integer(): NumberType {
+    return this.chain<NumberType>(
       test((obj) => [
         Number.isInteger(obj),
         () => new ConstraintError(obj, "be an integer", "integer")
       ]),
-      NumberSchema
+      NumberType
     );
   }
 
@@ -39,27 +39,27 @@ export class NumberSchema extends BaseSchema<number> {
    * Require the number to be a multiple of n
    * @param n The base
    */
-  multiple(n: number): NumberSchema {
-    return this.chain<NumberSchema>(
+  multiple(n: number): NumberType {
+    return this.chain<NumberType>(
       test((obj) => [
         Number.isInteger(obj / n),
         () => new ConstraintError(obj, `be a multiple of ${n}`, "multiple", n)
       ]),
-      NumberSchema
+      NumberType
     );
   }
 
   /**
    * Require the number to be negative
    */
-  negative(): NumberSchema {
+  negative(): NumberType {
     return this.lt(0);
   }
 
   /**
    * Require the number to be positive
    */
-  positive(): NumberSchema {
+  positive(): NumberType {
     return this.gt(0);
   }
 
@@ -67,13 +67,13 @@ export class NumberSchema extends BaseSchema<number> {
    * Require the number to be greater than n
    * @param n The bound
    */
-  gt(n: number): NumberSchema {
-    return this.chain<NumberSchema>(
+  gt(n: number): NumberType {
+    return this.chain<NumberType>(
       test((obj) => [
         obj > n,
         () => new ConstraintError(obj, `be greater than ${n}`, "gt", n)
       ]),
-      NumberSchema
+      NumberType
     );
   }
 
@@ -81,14 +81,14 @@ export class NumberSchema extends BaseSchema<number> {
    * Require the number to be greater than or equal to n
    * @param n The bound
    */
-  ge(n: number): NumberSchema {
-    return this.chain<NumberSchema>(
+  ge(n: number): NumberType {
+    return this.chain<NumberType>(
       test((obj) => [
         obj >= n,
         () =>
           new ConstraintError(obj, `be greater than or equal to ${n}`, "ge", n)
       ]),
-      NumberSchema
+      NumberType
     );
   }
 
@@ -96,13 +96,13 @@ export class NumberSchema extends BaseSchema<number> {
    * Require the number to be equal to n
    * @param n The bound
    */
-  eq(n: number): NumberSchema {
-    return this.chain<NumberSchema>(
+  eq(n: number): NumberType {
+    return this.chain<NumberType>(
       test((obj) => [
         obj === n,
         () => new ConstraintError(obj, `be equal to ${n}`, "eq", n)
       ]),
-      NumberSchema
+      NumberType
     );
   }
 
@@ -110,13 +110,13 @@ export class NumberSchema extends BaseSchema<number> {
    * Require the number to be less than or equal ton
    * @param n The bound
    */
-  le(n: number): NumberSchema {
-    return this.chain<NumberSchema>(
+  le(n: number): NumberType {
+    return this.chain<NumberType>(
       test((obj) => [
         obj <= n,
         () => new ConstraintError(obj, `be less than or equal to ${n}`, "le", n)
       ]),
-      NumberSchema
+      NumberType
     );
   }
 
@@ -124,13 +124,13 @@ export class NumberSchema extends BaseSchema<number> {
    * Require the number to be less than n
    * @param n The bound
    */
-  lt(n: number): NumberSchema {
-    return this.chain<NumberSchema>(
+  lt(n: number): NumberType {
+    return this.chain<NumberType>(
       test((obj) => [
         obj < n,
         () => new ConstraintError(obj, `be less than ${n}`, "lt", n)
       ]),
-      NumberSchema
+      NumberType
     );
   }
 
@@ -139,8 +139,8 @@ export class NumberSchema extends BaseSchema<number> {
    * @param low Low bound
    * @param high High bound
    */
-  between(low: number, high: number): NumberSchema {
-    return this.chain<NumberSchema>(
+  between(low: number, high: number): NumberType {
+    return this.chain<NumberType>(
       test((obj) => [
         obj >= low && obj <= high,
         () =>
@@ -149,7 +149,7 @@ export class NumberSchema extends BaseSchema<number> {
             high
           ])
       ]),
-      NumberSchema
+      NumberType
     );
   }
 }

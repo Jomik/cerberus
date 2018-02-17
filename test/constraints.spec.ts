@@ -3,16 +3,16 @@ import { expect } from "chai";
 import { InvalidResult } from "../src/types";
 import { NumericProperty } from "../src/constraints/property";
 import { string } from "../src/index";
-import { StringSchema } from "../src/schemas/string";
+import { StringType } from "../src/types/string";
 // tslint:disable:no-unused-expression
 
 describe("NumericProperty", () => {
-  let spec: NumericProperty<string, StringSchema<string>>;
+  let spec: NumericProperty<string, StringType<string>>;
   beforeEach(() => {
     spec = new NumericProperty(
       "length",
       (string as any).chain.bind(string),
-      StringSchema
+      StringType
     );
   });
   describe("has", () => {

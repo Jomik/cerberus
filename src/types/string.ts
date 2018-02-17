@@ -1,20 +1,20 @@
 import { test } from "../utils";
-import { BaseSchema } from "./base";
-import { SchemaTest, ChainMethod } from "../types";
+import { BaseType } from "./base";
+import { TypeTest, ChainMethod } from "../types";
 import { TypeError, ConstraintError, MissingError } from "../errors";
 import { NumericProperty } from "../constraints/property";
 
-export class StringSchema extends BaseSchema<string> {
-  get length(): NumericProperty<string, StringSchema> {
-    return new NumericProperty<string, StringSchema>(
+export class StringType extends BaseType<string> {
+  get length(): NumericProperty<string, StringType> {
+    return new NumericProperty<string, StringType>(
       "length",
       this.chain.bind(this),
-      StringSchema
+      StringType
     );
   }
 
   constructor(
-    validate: SchemaTest<string> = test((obj: any) => [
+    validate: TypeTest<string> = test((obj: any) => [
       typeof obj === "string",
       () =>
         obj === undefined ? new MissingError(obj) : new TypeError(obj, "string")
@@ -27,8 +27,8 @@ export class StringSchema extends BaseSchema<string> {
    * Require the string to match exp
    * @param exp The expression to test against
    */
-  matches(exp: RegExp): StringSchema {
-    return this.chain<StringSchema>(
+  matches(exp: RegExp): StringType {
+    return this.chain<StringType>(
       test((obj) => [
         exp.test(obj),
         () =>
@@ -39,21 +39,21 @@ export class StringSchema extends BaseSchema<string> {
             exp
           )
       ]),
-      StringSchema
+      StringType
     );
   }
 
   /**
    * Require the string to be alphanumeric
    */
-  alphanum(): StringSchema {
+  alphanum(): StringType {
     return this.matches(/^[A-Z0-9]*$/i);
   }
 
   /**
    * Require the string to be an email
    */
-  email(): StringSchema {
+  email(): StringType {
     return this.matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i);
   }
 
@@ -61,13 +61,13 @@ export class StringSchema extends BaseSchema<string> {
    * Require the string to include str
    * @param str The required string
    */
-  includes(str: string): StringSchema {
-    return this.chain<StringSchema>(
+  includes(str: string): StringType {
+    return this.chain<StringType>(
       test((obj) => [
         obj.includes(str),
         () => new ConstraintError(obj, `include ${str}`, "includes", str)
       ]),
-      StringSchema
+      StringType
     );
   }
 }
