@@ -80,6 +80,12 @@ Returns type `A` when validated
 
 Returns type `any` when validated
 
+### `BooleanType`
+
+Returns type `boolean` when validated \
+ `#truthy(...values: any[])` Perceives values as true \
+ `#falsy(...values: any[])` Perceives values as false
+
 #### `NumberType`
 
 Returns type `number` when validated \

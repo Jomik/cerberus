@@ -5,6 +5,7 @@ import { ObjectType, ObjectSchema } from "./types/object";
 import { BaseType } from "./types/base";
 import { ValidationResult } from "./types";
 import { ArrayType } from "./types/array";
+import { BooleanType } from "./types/boolean";
 export * from "./functions";
 // tslint:disable:variable-name
 
@@ -18,6 +19,7 @@ export function validate<A>(
 export const any = new AnyType();
 export const string = new StringType();
 export const number = new NumberType();
+export const boolean = new BooleanType();
 
 export function array<A>(schema: BaseType<A>): ArrayType<A> {
   return new ArrayType<A>(schema);
