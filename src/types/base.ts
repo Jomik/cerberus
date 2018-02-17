@@ -14,8 +14,8 @@ export class Type<A> {
 }
 
 export class BaseType<A> extends Type<A> {
-  constructor(internalValidate: TypeTest<A>) {
-    super(internalValidate);
+  constructor(validate: TypeTest<A>) {
+    super(validate);
   }
 
   protected chain<B extends BaseType<A>>(
