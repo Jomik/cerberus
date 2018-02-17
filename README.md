@@ -94,6 +94,8 @@ Returns type `number` when validated \
 Returns type `string` when validated \
  `#includes(str: string)` Requires the string to include `str` \
  `#matches(exp: RegExp)` Requires the string to match `exp` \
+ `#alphanum()` Requires the string to be alphanumeric \
+ `#email()` Requires the string to be an email \
  `.length#gt/ge/eq/le/lt(n: number)` Requires the length of the string to satisfy the equality
 
 #### `ArraySchema<A>`

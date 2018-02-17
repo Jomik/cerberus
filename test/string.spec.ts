@@ -84,6 +84,13 @@ describe("string", () => {
       const { valid: invalid } = spec.validate("fOo bAr");
       expect(invalid).to.be.false;
     });
+    it("email", () => {
+      const spec = string.email();
+      const { valid } = spec.validate("foo@bar.baz");
+      expect(valid).to.be.true;
+      const { valid: invalid } = spec.validate("fOo bAr@<>");
+      expect(invalid).to.be.false;
+    });
     it("includes", () => {
       const spec = string.includes("bar");
       const { valid } = spec.validate("foo bar baz");

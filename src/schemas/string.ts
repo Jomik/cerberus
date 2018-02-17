@@ -47,7 +47,14 @@ export class StringSchema extends BaseSchema<string> {
    * Require the string to be alphanumeric
    */
   alphanum(): StringSchema {
-    return this.matches(/^[a-z0-9]*$/i);
+    return this.matches(/^[A-Z0-9]*$/i);
+  }
+
+  /**
+   * Require the string to be an email
+   */
+  email(): StringSchema {
+    return this.matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i);
   }
 
   /**
