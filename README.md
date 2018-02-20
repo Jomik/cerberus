@@ -5,6 +5,8 @@ Experimental, work in progress.
 
 [![Build Status](https://travis-ci.org/Jomik/cerberus.svg?branch=master)](https://travis-ci.org/Jomik/cerberus)
 [![codecov](https://codecov.io/gh/jomik/cerberus/branch/master/graph/badge.svg)](https://codecov.io/gh/jomik/cerberus)
+[![dependencies Status](https://david-dm.org/jomik/cerberus/status.svg)](https://david-dm.org/jomik/cerberus)
+[![devDependencies Status](https://david-dm.org/jomik/cerberus/dev-status.svg)](https://david-dm.org/jomik/cerberus?type=dev)
 [![Greenkeeper badge](https://badges.greenkeeper.io/Jomik/cerberus.svg)](https://greenkeeper.io/)
 
 Here is a basic example.
@@ -138,8 +140,8 @@ type ObjectSchema<A extends object> = {
 
 Please submit an issue with outlining your idea. If small, a pull request can be submitted immediately.
 
-* [Pull Requests](https://github.com/Jomik/object-validator/pulls)
-* [Issues](https://github.com/Jomik/object-validator/issues)
+* [Pull Requests](https://github.com/Jomik/cerberus/pulls)
+* [Issues](https://github.com/Jomik/cerberus/issues)
 
 ## License
 
