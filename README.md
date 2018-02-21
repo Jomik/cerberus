@@ -43,7 +43,7 @@ if (result.valid) {
 _Currently waiting to publish on npm_
 
 ```
-npm install --save github:jomik/cerberus
+npm install github:jomik/cerberus
 ```
 
 ## Examples
