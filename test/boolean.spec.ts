@@ -2,7 +2,6 @@ import "mocha";
 import { expect } from "chai";
 import { boolean } from "../src";
 import { InvalidResult, ValidResult } from "../src/types";
-import { NumericProperty } from "../src/constraints/property";
 // tslint:disable:no-unused-expression
 
 describe("boolean", () => {

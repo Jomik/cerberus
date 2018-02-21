@@ -75,7 +75,7 @@ describe("array", () => {
     });
   });
   describe("has", () => {
-    describe("length", () => {
+    it("length", () => {
       expect(array(string).length).to.be.an.instanceof(NumericProperty);
     });
     describe("includes", () => {

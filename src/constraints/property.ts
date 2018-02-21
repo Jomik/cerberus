@@ -6,7 +6,8 @@ export class NumericProperty<A, B extends BaseType<A>> {
   constructor(
     private prop: string,
     private chain: ChainMethod<A, B>,
-    private ctor: TypeConstructor<A, B>
+    private ctor: TypeConstructor<A, B>,
+    private what: string = prop
   ) {}
 
   /**
@@ -18,7 +19,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
       test((obj) => [
         obj[this.prop] > n,
         () =>
-          new ConstraintError(obj, `be greater than ${n}`, "gt", n, this.prop)
+          new ConstraintError(obj, `be greater than ${n}`, "gt", n, this.what)
       ]),
       this.ctor
     );
@@ -38,7 +39,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
             `be greater than or equal to ${n}`,
             "ge",
             n,
-            this.prop
+            this.what
           )
       ]),
       this.ctor
@@ -53,7 +54,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] === n,
-        () => new ConstraintError(obj, `be equal to ${n}`, "eq", n, this.prop)
+        () => new ConstraintError(obj, `be equal to ${n}`, "eq", n, this.what)
       ]),
       this.ctor
     );
@@ -73,7 +74,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
             `be less than or equal to ${n}`,
             "le",
             n,
-            this.prop
+            this.what
           )
       ]),
       this.ctor
@@ -88,7 +89,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
     return this.chain(
       test((obj) => [
         obj[this.prop] < n,
-        () => new ConstraintError(obj, `be less than ${n}`, "lt", n, this.prop)
+        () => new ConstraintError(obj, `be less than ${n}`, "lt", n, this.what)
       ]),
       this.ctor
     );
@@ -109,7 +110,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
             `be between ${low} and ${high}`,
             "between",
             [low, high],
-            this.prop
+            this.what
           )
       ]),
       this.ctor

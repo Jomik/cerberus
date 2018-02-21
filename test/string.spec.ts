@@ -65,7 +65,7 @@ describe("string", () => {
     });
   });
   describe("has props", () => {
-    describe("length", () => {
+    it("length", () => {
       expect(string.length).to.be.an.instanceof(NumericProperty);
     });
   });
