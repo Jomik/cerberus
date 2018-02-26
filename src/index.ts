@@ -19,6 +19,7 @@ export function validate<A>(
 export const any = new AnyType();
 export const string = new StringType();
 export const number = new NumberType();
+export const integer = new NumberType().integer();
 export const boolean = new BooleanType();
 
 export function array<A>(schema: BaseType<A>): ArrayType<A> {
