@@ -1,5 +1,5 @@
 import "mocha";
-import { expect } from "chai";
+import { expect, assert } from "chai";
 import { InvalidResult } from "../src/types";
 import {
   oneOf,
@@ -8,11 +8,102 @@ import {
   number,
   object,
   alternatives,
-  forbidden
+  forbidden,
+  any,
+  boolean,
+  array
 } from "../src";
 import { StringType } from "../src/types/string";
 import { NumberType } from "../src/types/number";
 // tslint:disable:no-unused-expression
+
+describe("check", () => {
+  describe("accepts", () => {
+    it("<any>", () => {
+      expect(any.check("foo")).to.be.true;
+    });
+    it("<array>", () => {
+      expect(array(string).check(["foo", "bar"])).to.be.true;
+    });
+    it("<boolean>", () => {
+      expect(boolean.check(false)).to.be.true;
+    });
+    it("<number>", () => {
+      expect(number.check(42)).to.be.true;
+    });
+    it("<object>", () => {
+      expect(object({ foo: string }).check({ foo: "foo" })).to.be.true;
+    });
+    it("<string>", () => {
+      expect(string.check("foo")).to.be.true;
+    });
+  });
+  describe("rejects", () => {
+    it("<any>", () => {
+      expect(any.check(undefined)).to.be.false;
+    });
+    it("<array>", () => {
+      expect(array(string).check([42, "bar"])).to.be.false;
+    });
+    it("<boolean>", () => {
+      expect(boolean.check(42)).to.be.false;
+    });
+    it("<number>", () => {
+      expect(number.check("foo")).to.be.false;
+    });
+    it("<object>", () => {
+      expect(object({ foo: string }).check({ bar: "foo" })).to.be.false;
+    });
+    it("<string>", () => {
+      expect(string.check(42)).to.be.false;
+    });
+  });
+});
+
+describe("test", () => {
+  describe("accepts", () => {
+    it("<any>", () => {
+      expect(any.test("foo")).to.equal("foo");
+    });
+    it("<array>", () => {
+      expect(array(string).test(["foo", "bar"])).to.deep.equal(["foo", "bar"]);
+    });
+    it("<boolean>", () => {
+      expect(boolean.test(false)).to.equal(false);
+    });
+    it("<number>", () => {
+      expect(number.test(42)).to.equal(42);
+    });
+    it("<object>", () => {
+      expect(object({ foo: string }).test({ foo: "foo" })).to.deep.equal({
+        foo: "foo"
+      });
+    });
+    it("<string>", () => {
+      expect(string.test("foo")).to.equal("foo");
+    });
+  });
+  describe("throws", () => {
+    it("<any>", () => {
+      assert.throws(() => any.test(undefined));
+    });
+    it("<array>", () => {
+      assert.throws(() => array(string).test([42, "bar"]));
+    });
+    it("<boolean>", () => {
+      assert.throws(() => boolean.test(42));
+    });
+    it("<number>", () => {
+      assert.throws(() => number.test("foo"));
+    });
+    it("<object>", () => {
+      assert.throws(() => object({ foo: string }).test({ bar: "foo" }));
+    });
+    it("<string>", () => {
+      assert.throws(() => string.test(42));
+    });
+  });
+});
 
 describe("oneOf", () => {
   describe("accepts", () => {

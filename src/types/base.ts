@@ -11,6 +11,28 @@ export class Type<A> {
   validate(object: any): ValidationResult<A> {
     return this.internalValidate(object);
   }
+
+  /**
+   * Check if object satsifes the schema
+   * @param object The object to check
+   */
+  check(object: any): object is A {
+    return this.validate(object).valid;
+  }
+
+  /**
+   * Test if the object satisfies schema
+   * @param object the object to test
+   * @throws ValidationError[]
+   */
+  test(object: any): A {
+    const res = this.validate(object);
+    if (res.valid) {
+      return res.obj;
+    } else {
+      throw res.errors;
+    }
+  }
 }
 
 export class BaseType<A> extends Type<A> {
