@@ -49,8 +49,7 @@ export class BaseType<A> extends Type<A> {
 
   protected chain<B extends Type<A>>(
     next: TypeTest<A>,
-    ctor: TypeConstructor<A, B>,
-    ...args: any[]
+    ctor: TypeConstructor<A, B>
   ): B {
     return new ctor((obj) => {
       const result1 = this.validate(obj);
@@ -59,7 +58,7 @@ export class BaseType<A> extends Type<A> {
       }
       const result2 = result1.valid ? next(result1.obj) : next(obj);
       return mergeResults(result1, result2);
-    }, ...args);
+    });
   }
 
   private internalSatisfies<B extends Type<A>>(
@@ -73,6 +72,20 @@ export class BaseType<A> extends Type<A> {
         () => new ConstraintError(obj, message, type)
       ]),
       Object.getPrototypeOf(this).constructor as TypeConstructor<A, B>
+    );
+  }
+
+  thru<B>(process: (obj: A) => B): BaseType<B> {
+    return new BaseType<B>((obj: any) => {
+      const res = this.validate(obj);
+      return res.valid ? valid(process(obj)) : res;
+    });
+  }
+
+  and<B extends A>(schema: Type<B>) {
+    return this.chain<BaseType<A & B>>(
+      schema.validate.bind(schema),
+      BaseType as TypeConstructor<A & B, BaseType<A & B>>
     );
   }
 

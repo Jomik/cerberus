@@ -1,6 +1,6 @@
 import "mocha";
 import { expect } from "chai";
-import { any, number, string } from "../src";
+import { any, number, string, object, array, thru } from "../src";
 import { InvalidResult, ValidResult } from "../src/types";
 import { validate } from "../src/index";
 // tslint:disable:no-unused-expression
@@ -104,6 +104,46 @@ describe("any", () => {
         .satisfies((o) => false, "impossible", "equal")
         .validate("foo");
       expect(valid).to.be.false;
+    });
+  });
+  describe("thru", () => {
+    it("starts", () => {
+      const spec = thru((n) => n.substring(3)).and(number.between(20, 42));
+      const { valid } = spec.validate("foo23");
+      expect(valid).to.be.true;
+    });
+    it("processes", () => {
+      const person = object({ name: string, id: number });
+      const schema = person.extend({
+        mother: person,
+        father: person,
+        children: array(person).thru((a) => a.map((e) => e.name))
+      });
+      const person1 = { name: "Foo Bar", id: 1 };
+      const person2 = { name: "Foo Buz", id: 2 };
+      const person3 = { name: "Bar FooBar", id: 3 };
+      const person4 = {
+        name: "Buz FooBar",
+        id: 4,
+        father: person1,
+        mother: person2,
+        children: [person3]
+      };
+      const person5 = {
+        name: "Buz FooBar",
+        id: 4,
+        father: person1,
+        mother: person2,
+        children: "foo"
+      };
+      const res = schema.validate(person4);
+      expect(res.valid).to.be.true;
+      if (res.valid) {
+        expect(res.obj.children)
+          .to.an("array")
+          .that.includes(person3.name);
+      }
+      expect(schema.validate(person5).valid).to.be.false;
     });
   });
 });

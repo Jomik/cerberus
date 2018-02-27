@@ -30,3 +30,6 @@ export function object<A extends object>(
 ): ObjectType<A> {
   return new ObjectType(undefined, specification);
 }
+export function thru<B>(process: (obj: any) => B) {
+  return new AnyType().thru(process);
+}
