@@ -46,6 +46,12 @@ function updateObj<A, C>(
 }
 
 export class ObjectType<A extends object> extends BaseType<A> {
+  satisfies: (
+    predicate: (obj: A) => boolean,
+    message: string,
+    type: string
+  ) => ObjectType<A>;
+
   constructor(
     validate: TypeTest<any> = test((obj) => [
       obj === undefined || (typeof obj === "object" && !Array.isArray(obj)),

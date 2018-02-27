@@ -5,6 +5,12 @@ import { TypeError, ConstraintError, MissingError } from "../errors";
 import { NumericProperty } from "../constraints/property";
 
 export class StringType extends BaseType<string> {
+  satisfies: (
+    predicate: (obj: string) => boolean,
+    message: string,
+    type: string
+  ) => StringType;
+
   get length(): NumericProperty<string, StringType> {
     return new NumericProperty<string, StringType>(
       "length",

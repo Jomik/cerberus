@@ -11,6 +11,20 @@ import { NumericProperty } from "../constraints/property";
 import * as equal from "fast-deep-equal";
 
 export class ArrayType<A> extends BaseType<A[]> {
+  get length(): NumericProperty<A[], ArrayType<A>> {
+    return new NumericProperty<A[], ArrayType<A>>(
+      "length",
+      this.chain.bind(this),
+      ArrayType
+    );
+  }
+
+  satisfies: (
+    predicate: (obj: A[]) => boolean,
+    message: string,
+    type: string
+  ) => ArrayType<A>;
+
   constructor(arg: TypeTest<A[]> | Type<A>) {
     if (arg instanceof Type) {
       super((obj) => {
@@ -43,14 +57,6 @@ export class ArrayType<A> extends BaseType<A[]> {
     } else {
       super(arg);
     }
-  }
-
-  get length(): NumericProperty<A[], ArrayType<A>> {
-    return new NumericProperty<A[], ArrayType<A>>(
-      "length",
-      this.chain.bind(this),
-      ArrayType
-    );
   }
 
   /**

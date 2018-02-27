@@ -4,6 +4,12 @@ import { TypeTest } from "../types";
 import { TypeError, ConstraintError, MissingError } from "../errors";
 
 export class NumberType extends BaseType<number> {
+  satisfies: (
+    predicate: (obj: number) => boolean,
+    message: string,
+    type: string
+  ) => NumberType;
+
   constructor(
     validate: TypeTest<number> = (obj: any) => {
       if (typeof obj === "number") {

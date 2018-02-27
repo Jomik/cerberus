@@ -1,5 +1,6 @@
 import { TypeTest, ValidationResult, TypeConstructor } from "../types";
-import { mergeResults, valid } from "../utils";
+import { mergeResults, valid, test } from "../utils";
+import { ConstraintError } from "../errors";
 
 export class Type<A> {
   constructor(protected internalValidate: TypeTest<A>) {}
@@ -36,11 +37,17 @@ export class Type<A> {
 }
 
 export class BaseType<A> extends Type<A> {
+  satisfies: (
+    predicate: (obj: A) => boolean,
+    message: string,
+    type: string
+  ) => BaseType<A>;
+
   constructor(validate: TypeTest<A>) {
     super(validate);
   }
 
-  protected chain<B extends BaseType<A>>(
+  protected chain<B extends Type<A>>(
     next: TypeTest<A>,
     ctor: TypeConstructor<A, B>,
     ...args: any[]
@@ -53,6 +60,20 @@ export class BaseType<A> extends Type<A> {
       const result2 = result1.valid ? next(result1.obj) : next(obj);
       return mergeResults(result1, result2);
     }, ...args);
+  }
+
+  private internalSatisfies<B extends Type<A>>(
+    predicate: (obj: A) => boolean,
+    message: string,
+    type: string
+  ): B {
+    return this.chain<B>(
+      test((obj) => [
+        predicate(obj),
+        () => new ConstraintError(obj, message, type)
+      ]),
+      Object.getPrototypeOf(this).constructor as TypeConstructor<A, B>
+    );
   }
 
   /**
@@ -74,3 +95,5 @@ export class BaseType<A> extends Type<A> {
     );
   }
 }
+
+BaseType.prototype.satisfies = (BaseType.prototype as any).internalSatisfies;

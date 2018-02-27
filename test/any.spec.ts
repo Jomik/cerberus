@@ -1,6 +1,6 @@
 import "mocha";
 import { expect } from "chai";
-import { any, number } from "../src";
+import { any, number, string } from "../src";
 import { InvalidResult, ValidResult } from "../src/types";
 import { validate } from "../src/index";
 // tslint:disable:no-unused-expression
@@ -83,6 +83,27 @@ describe("any", () => {
       expect(errors)
         .to.be.an("array")
         .of.length(1);
+    });
+  });
+  describe("satisfies", () => {
+    it("accepts", () => {
+      const { valid } = any
+        .satisfies((o) => o === "foo", "be foo", "equal")
+        .validate("foo");
+      expect(valid).to.be.true;
+    });
+    it("has type", () => {
+      const { valid } = string
+        .satisfies((o) => o === "foo", "be foo", "equal")
+        .length.eq(3)
+        .validate("foo");
+      expect(valid).to.be.true;
+    });
+    it("rejects", () => {
+      const { valid } = any
+        .satisfies((o) => false, "impossible", "equal")
+        .validate("foo");
+      expect(valid).to.be.false;
     });
   });
 });

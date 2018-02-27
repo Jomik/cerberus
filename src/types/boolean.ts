@@ -4,6 +4,12 @@ import { TypeError } from "../errors";
 import { test, valid } from "../utils";
 
 export class BooleanType extends BaseType<boolean> {
+  satisfies: (
+    predicate: (obj: boolean) => boolean,
+    message: string,
+    type: string
+  ) => BooleanType;
+
   constructor(
     validate: TypeTest<boolean> = test((obj) => [
       typeof obj === "boolean",
