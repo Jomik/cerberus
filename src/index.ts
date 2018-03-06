@@ -6,6 +6,7 @@ import { BaseType } from "./types/base";
 import { ValidationResult } from "./types";
 import { ArrayType } from "./types/array";
 import { BooleanType } from "./types/boolean";
+import { DateType } from "./types/date";
 export * from "./functions";
 // tslint:disable:variable-name
 
@@ -21,6 +22,7 @@ export const string = new StringType();
 export const number = new NumberType();
 export const integer = new NumberType().integer();
 export const boolean = new BooleanType();
+export const date = new DateType();
 
 export function array<A>(schema: BaseType<A>): ArrayType<A> {
   return new ArrayType<A>(schema);
