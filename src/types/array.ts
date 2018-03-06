@@ -13,6 +13,7 @@ import * as equal from "fast-deep-equal";
 export class ArrayType<A> extends BaseType<A[]> {
   get length(): NumericProperty<A[], ArrayType<A>> {
     return new NumericProperty<A[], ArrayType<A>>(
+      (obj) => obj.length,
       "length",
       this.chain.bind(this),
       ArrayType

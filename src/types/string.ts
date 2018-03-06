@@ -13,6 +13,7 @@ export class StringType extends BaseType<string> {
 
   get length(): NumericProperty<string, StringType> {
     return new NumericProperty<string, StringType>(
+      (obj) => obj.length,
       "length",
       this.chain.bind(this),
       StringType

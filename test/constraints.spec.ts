@@ -7,9 +7,10 @@ import { StringType } from "../src/types/string";
 // tslint:disable:no-unused-expression
 
 describe("NumericProperty", () => {
-  let spec: NumericProperty<string, StringType<string>>;
+  let spec: NumericProperty<string, StringType>;
   beforeEach(() => {
     spec = new NumericProperty(
+      (obj) => obj.length,
       "length",
       (string as any).chain.bind(string),
       StringType

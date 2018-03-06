@@ -4,11 +4,11 @@ import { BaseType } from "../types/base";
 import { test } from "../utils";
 export class NumericProperty<A, B extends BaseType<A>> {
   constructor(
-    private prop: string,
+    private getter: (obj: A) => number,
+    private what: string,
     private chain: ChainMethod<A, B>,
-    private ctor: TypeConstructor<A, B>,
-    private what: string = prop
-  ) {}
+    private ctor: TypeConstructor<A, B>
+  ) { }
 
   /**
    * Require the property to be greater than n
@@ -17,7 +17,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
   gt(n: number): B {
     return this.chain(
       test((obj) => [
-        obj[this.prop] > n,
+        this.getter(obj) > n,
         () =>
           new ConstraintError(obj, `be greater than ${n}`, "gt", n, this.what)
       ]),
@@ -32,7 +32,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
   ge(n: number): B {
     return this.chain(
       test((obj) => [
-        obj[this.prop] >= n,
+        this.getter(obj) >= n,
         () =>
           new ConstraintError(
             obj,
@@ -53,7 +53,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
   eq(n: number): B {
     return this.chain(
       test((obj) => [
-        obj[this.prop] === n,
+        this.getter(obj) === n,
         () => new ConstraintError(obj, `be equal to ${n}`, "eq", n, this.what)
       ]),
       this.ctor
@@ -67,7 +67,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
   le(n: number): B {
     return this.chain(
       test((obj) => [
-        obj[this.prop] <= n,
+        this.getter(obj) <= n,
         () =>
           new ConstraintError(
             obj,
@@ -88,7 +88,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
   lt(n: number): B {
     return this.chain(
       test((obj) => [
-        obj[this.prop] < n,
+        this.getter(obj) < n,
         () => new ConstraintError(obj, `be less than ${n}`, "lt", n, this.what)
       ]),
       this.ctor
@@ -103,7 +103,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
   between(low: number, high: number): B {
     return this.chain(
       test((obj) => [
-        obj[this.prop] >= low && obj[this.prop] <= high,
+        this.getter(obj) >= low && this.getter(obj) <= high,
         () =>
           new ConstraintError(
             obj,
