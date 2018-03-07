@@ -52,6 +52,26 @@ describe("date", () => {
     })
     it("time", () => {
       expect(date.time).to.be.an.instanceof(NumericProperty);
-    })
-  })
+    });
+  });
+  describe("before", () => {
+    it("accepts", () => {
+      const res = date.before(new Date(Date.now() + 1)).validate(new Date());
+      expect(res.valid).to.be.true;
+    });
+    it("rejects", () => {
+      const res = date.before(new Date(Date.now() - 1)).validate(new Date());
+      expect(res.valid).to.be.false;
+    });
+  });
+  describe("after", () => {
+    it("accepts", () => {
+      const res = date.after(new Date(Date.now() - 1)).validate(new Date());
+      expect(res.valid).to.be.true;
+    });
+    it("rejects", () => {
+      const res = date.after(new Date(Date.now() + 1)).validate(new Date());
+      expect(res.valid).to.be.false;
+    });
+  });
 });

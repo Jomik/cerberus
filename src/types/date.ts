@@ -1,7 +1,7 @@
 import { BaseType } from "./base";
 import { TypeTest } from "../types";
 import { test, valid, invalid } from "../utils";
-import { MissingError, TypeError } from "../errors";
+import { MissingError, TypeError, ConstraintError } from "../errors";
 import { NumericProperty } from "../constraints/property";
 
 export class DateType extends BaseType<Date> {
@@ -102,5 +102,21 @@ export class DateType extends BaseType<Date> {
     }
   ) {
     super(validate);
+  }
+
+  before(date: Date): DateType {
+    return new DateType(
+      test((obj) =>
+        [obj < date,
+        () => new ConstraintError(obj, `be before ${date.toString()}`, "before", date)])
+    );
+  }
+
+  after(date: Date): DateType {
+    return new DateType(
+      test((obj) =>
+        [obj > date,
+        () => new ConstraintError(obj, `be after ${date.toString()}`, "after", date)])
+    );
   }
 }
