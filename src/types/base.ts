@@ -98,6 +98,9 @@ export class BaseType<A> extends Type<A> {
     );
   }
 
+  default<B extends number>(value: B): Type<A | B>;
+  default<B extends string>(value: B): Type<A | B>;
+  default<B>(value: B): Type<A | B>;
   /**
    * Set a default value to use in place of an undefined object
    * @param value The default value
