@@ -83,5 +83,16 @@ describe("NumericProperty", () => {
         .to.be.an("array")
         .of.length(1);
     });
+    it("multiple", () => {
+      const { valid } = spec.multiple(3).validate("foobarbaz");
+      expect(valid).to.be.true;
+      const { valid: invalid, errors } = spec
+        .multiple(3)
+        .validate("badabum") as InvalidResult;
+      expect(invalid).to.be.false;
+      expect(errors)
+        .to.be.an("array")
+        .of.length(1);
+    });
   });
 });

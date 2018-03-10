@@ -116,4 +116,18 @@ export class NumericProperty<A, B extends BaseType<A>> {
       this.ctor
     );
   }
+
+  /**
+   * Require the property to be a multiple of n
+   * @param n The base
+   */
+  multiple(n: number): B {
+    return this.chain(
+      test((obj) => [
+        Number.isInteger(this.getter(obj) / n),
+        () => new ConstraintError(obj, `be a multiple of ${n}`, "multiple", n)
+      ]),
+      this.ctor
+    );
+  }
 }
