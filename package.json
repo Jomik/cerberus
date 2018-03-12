@@ -15,6 +15,7 @@
     "clean": "rm -rf dist coverage .nyc_output",
     "prepare": "npm run clean; npm run build",
     "format": "prettier --write \"{src,test}/**/*.ts\"",
+    "release": "np",
     "test": "nyc mocha --timeout 5000 --recursive test/**/*.spec.ts",
     "test:watch": "mocha --require ts-node/register --watch-extensions ts --reporter spec --watch test/**/*.spec.ts",
     "codecov": "codecov -f coverage/coverage-final.json"
@@ -37,16 +38,17 @@
   "homepage": "https://github.com/Jomik/cerberus#readme",
   "devDependencies": {
     "@types/chai": "^4.1.2",
-    "@types/mocha": "^2.2.47",
+    "@types/mocha": "^2.2.48",
     "chai": "^4.1.2",
     "codecov": "^3.0.0",
-    "mocha": "^5.0.0",
-    "nyc": "^11.4.1",
-    "prettier": "^1.10.2",
+    "mocha": "^5.0.4",
+    "np": "^2.20.1",
+    "nyc": "^11.5.0",
+    "prettier": "^1.11.1",
     "source-map-support": "^0.5.3",
-    "ts-node": "^5.0.0",
+    "ts-node": "^5.0.1",
     "tslint": "^5.9.1",
-    "typescript": "^2.6.2"
+    "typescript": "^2.7.2"
   },
   "prettier": {
     "arrowParens": "always"
@@ -67,6 +69,6 @@
     ]
   },
   "dependencies": {
-    "fast-deep-equal": "^1.0.0"
+    "fast-deep-equal": "^1.1.0"
   }
 }
