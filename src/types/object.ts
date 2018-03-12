@@ -90,13 +90,16 @@ export class ObjectType<A extends object> extends BaseType<A> {
         }
       }
     }
-    for (const key in this.schema) {
-      /* istanbul ignore else */
-      if (this.schema.hasOwnProperty(key)) {
-        const schemaFunc = this.schema[key];
-        if (isReference<A[keyof A], Type<A[keyof A]>>(schemaFunc)) {
-          const schema = schemaFunc(obj);
-          result = updateObj<A, A[keyof A]>(schema, result, obj, key);
+
+    if (result.valid) {
+      for (const key in this.schema) {
+        /* istanbul ignore else */
+        if (this.schema.hasOwnProperty(key)) {
+          const schemaFunc = this.schema[key];
+          if (isReference<A[keyof A], Type<A[keyof A]>>(schemaFunc)) {
+            const schema = schemaFunc(obj);
+            result = updateObj<A, A[keyof A]>(schema, result, obj, key);
+          }
         }
       }
     }

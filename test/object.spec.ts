@@ -180,6 +180,19 @@ describe("object", () => {
         const { valid } = spec.validate({ a: 10 });
         expect(valid).to.be.true;
       });
+      it("handles undefined", () => {
+        const foo = object({
+          from: string,
+          to: (o) =>
+            string.satisfies(
+              (obj) => o.from.length === obj.length,
+              "foo",
+              "bar"
+            )
+        });
+        expect(foo.validate({ from: undefined, to: "foobar" }).valid).to.be
+          .false;
+      });
     });
     describe("extend", () => {
       it("accepts", () => {
