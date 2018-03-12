@@ -132,10 +132,12 @@ export class NumberType extends BaseType<number> {
    */
   lt(n: number): NumberType {
     return this.chain<NumberType>(
-      test((obj) => [
-        obj < n,
-        () => new ConstraintError(obj, `be less than ${n}`, "lt", n)
-      ]),
+      test((obj) => {
+        return [
+          obj < n,
+          () => new ConstraintError(obj, `be less than ${n}`, "lt", n)
+        ];
+      }),
       NumberType
     );
   }

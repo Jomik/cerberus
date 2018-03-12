@@ -106,17 +106,26 @@ export class DateType extends BaseType<Date> {
 
   before(date: Date): DateType {
     return new DateType(
-      test((obj) =>
-        [obj < date,
-        () => new ConstraintError(obj, `be before ${date.toString()}`, "before", date)])
+      test((obj) => [
+        obj < date,
+        () =>
+          new ConstraintError(
+            obj,
+            `be before ${date.toString()}`,
+            "before",
+            date
+          )
+      ])
     );
   }
 
   after(date: Date): DateType {
     return new DateType(
-      test((obj) =>
-        [obj > date,
-        () => new ConstraintError(obj, `be after ${date.toString()}`, "after", date)])
+      test((obj) => [
+        obj > date,
+        () =>
+          new ConstraintError(obj, `be after ${date.toString()}`, "after", date)
+      ])
     );
   }
 }

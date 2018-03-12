@@ -8,7 +8,7 @@ export class NumericProperty<A, B extends BaseType<A>> {
     private what: string,
     private chain: ChainMethod<A, B>,
     private ctor: TypeConstructor<A, B>
-  ) { }
+  ) {}
 
   /**
    * Require the property to be greater than n
