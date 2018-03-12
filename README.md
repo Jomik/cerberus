@@ -40,10 +40,8 @@ if (result.valid) {
 
 ## Installation
 
-_Currently waiting to publish on npm_
-
 ```
-npm install github:jomik/cerberus
+npm install cerberus
 ```
 
 ## Examples
