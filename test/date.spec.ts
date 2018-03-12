@@ -56,21 +56,21 @@ describe("date", () => {
   });
   describe("before", () => {
     it("accepts", () => {
-      const res = date.before(new Date(Date.now() + 1)).validate(new Date());
+      const res = date.before(new Date(42)).validate(new Date(20));
       expect(res.valid).to.be.true;
     });
     it("rejects", () => {
-      const res = date.before(new Date(Date.now() - 1)).validate(new Date());
+      const res = date.before(new Date(20)).validate(new Date(42));
       expect(res.valid).to.be.false;
     });
   });
   describe("after", () => {
     it("accepts", () => {
-      const res = date.after(new Date(Date.now() - 1)).validate(new Date());
+      const res = date.after(new Date(20)).validate(new Date(42));
       expect(res.valid).to.be.true;
     });
     it("rejects", () => {
-      const res = date.after(new Date(Date.now() + 1)).validate(new Date());
+      const res = date.after(new Date(42)).validate(new Date(20));
       expect(res.valid).to.be.false;
     });
   });
