@@ -30,22 +30,19 @@ export class ArrayType<A> extends BaseType<A[]> {
     if (arg instanceof Type) {
       super((obj) => {
         if (Array.isArray(obj)) {
-          const arr: A[] = [];
           const results = obj.map((e) => arg.validate(e));
           return results.reduce(
             (acc, cur, index) => {
               if (cur.valid) {
-                arr[index] = cur.obj;
-                return acc;
+                return acc.valid ? valid<A[]>(acc.obj.concat(cur.obj)) : acc;
               } else {
-                const result = acc.valid
+                cur.errors.forEach((e) => e.path.unshift(index));
+                return acc.valid
                   ? cur
                   : invalid(...acc.errors.concat(cur.errors));
-                cur.errors.forEach((e) => e.path.unshift(index));
-                return result;
               }
             },
-            valid<A[]>(arr) as ValidationResult<A[]>
+            valid<A[]>([]) as ValidationResult<A[]>
           );
         } else {
           return invalid(
