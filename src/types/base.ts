@@ -78,7 +78,7 @@ export class BaseType<A> extends Type<A> {
   thru<B>(process: (obj: A) => B): BaseType<B> {
     return new BaseType<B>((obj: any) => {
       const res = this.validate(obj);
-      return res.valid ? valid(process(obj)) : res;
+      return res.valid ? valid(process(res.obj)) : res;
     });
   }
 
