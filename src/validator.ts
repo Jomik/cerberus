@@ -1,5 +1,11 @@
 import { Result, valid, invalid } from "./result";
-import { ValidationError, error, typeError, objectError } from "./error";
+import {
+  ValidationError,
+  error,
+  typeError,
+  objectError,
+  arrayError
+} from "./error";
 import { Id } from "./types";
 // tslint:disable:variable-name
 
@@ -178,13 +184,16 @@ function objectValidator<A extends object, B>(
 ): TypeValidator<Id<A & { [index: string]: B }>>;
 function objectValidator<A extends object, B>(
   schema: Schema<A>,
-  options?: { strict: boolean }
+  options: { strict: boolean }
+): TypeValidator<A>;
+function objectValidator<A extends object, B>(
+  schema: Schema<A>
 ): TypeValidator<A>;
 
 function objectValidator<A extends object, B>(
   schema: Schema<A>,
   options?: { rest?: SchemaEntry<A, B>; strict?: boolean }
-) {
+): TypeValidator<A> {
   const schemaEntries: [
     keyof A,
     SchemaEntry<A, A[keyof A]>,
@@ -203,11 +212,11 @@ function objectValidator<A extends object, B>(
     }
   });
 
-  return typeValidator<A>((o: A) => {
+  return typeValidator((o: any) => {
     if (typeof o === "object" && !Array.isArray(o)) {
       const keys = new Set(Object.keys(o));
       let obj: A = <any>{};
-      let err: { [index: string]: ValidationError } = {};
+      let err: [string, ValidationError][] = [];
       let errored = false;
 
       for (const [k, v] of schemaEntries) {
@@ -217,8 +226,8 @@ function objectValidator<A extends object, B>(
               obj[k] = val;
             },
             invalid: (e) => {
+              err.push([k, e]);
               errored = true;
-              err[k] = e;
             }
           });
         } else if (!errored) {
@@ -229,7 +238,7 @@ function objectValidator<A extends object, B>(
                 obj[k] = val;
               },
               invalid: (e) => {
-                err[k] = e;
+                err.push([k, e]);
                 errored = true;
               }
             });
@@ -250,7 +259,15 @@ function objectValidator<A extends object, B>(
               ? options.rest(obj)
               : options.rest;
           for (const k of keys) {
-            update(v, o[k], k, obj, err);
+            v.validate(o[k]).match({
+              valid: (val) => {
+                obj[k] = val;
+              },
+              invalid: (e) => {
+                err.push([k, e]);
+                errored = true;
+              }
+            });
           }
         } else if (options.strict !== undefined && options.strict === true) {
           if (keys.size > 0) {
@@ -261,11 +278,31 @@ function objectValidator<A extends object, B>(
         }
       }
 
-      return Object.keys(err).length === 0
-        ? valid(<A>obj)
-        : invalid(objectError(err));
+      return !errored ? valid(obj) : invalid(objectError(err));
     }
     return invalid(typeError("must be an object"));
   });
 }
 export const object = objectValidator;
+
+function arrayValidator<A>(v: Validator<A>): TypeValidator<A[]> {
+  return typeValidator((o: any) => {
+    if (Array.isArray(o)) {
+      let errored = false;
+      let err: [number, ValidationError][] = [];
+      const res = o.map((entry, i) =>
+        v.validate(entry).match({
+          valid: (a) => a,
+          invalid: (e) => {
+            err.push([i, e]);
+            errored = true;
+            return undefined;
+          }
+        })
+      );
+      return !errored ? valid(res) : invalid(arrayError(err));
+    }
+    return invalid(typeError("must be an array"));
+  });
+}
+export const array = arrayValidator;

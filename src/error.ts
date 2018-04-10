@@ -9,6 +9,10 @@ export class ValidationError extends Error {
       (<any>this).__proto__ = new.target.prototype;
     }
   }
+
+  details(): string {
+    return this.message;
+  }
 }
 
 export class ValidationTypeError extends ValidationError {
@@ -18,16 +22,30 @@ export class ValidationTypeError extends ValidationError {
 }
 
 export class ValidationObjectError extends ValidationError {
-  constructor(public readonly object: { [index: string]: ValidationError }) {
+  constructor(public readonly descriptor: [string, ValidationError][]) {
     super("must satisfy schema");
   }
 
   details(): string {
-    let messages = Object.entries(this.object).map(
-      ([k, e]) =>
-        `${k}: ${e instanceof ValidationObjectError ? e.details() : e.message}`
-    );
+    let messages = this.descriptor.map(([k, e]) => `${k}: ${e.details()}`);
     return `{ ${messages.join(", ")} }`;
+  }
+}
+
+export class ValidationArrayError extends ValidationError {
+  constructor(public readonly descriptor: [number, ValidationError][]) {
+    super("must satisfy validator");
+  }
+
+  details(): string {
+    let messages = this.descriptor.map(([i, e]) => `[${i}]: ${e.details()}`);
+    return messages.join(", ");
+  }
+}
+
+export class ValidationPropertyError extends ValidationError {
+  constructor(public readonly property: string, err: ValidationError) {
+    super(`property ${property} ${err.message}`);
   }
 }
 
@@ -39,6 +57,10 @@ export function typeError(message: string) {
   return new ValidationTypeError(message);
 }
 
-export function objectError(object: { [index: string]: ValidationError }) {
-  return new ValidationObjectError(object);
+export function objectError(descriptor: [string, ValidationError][]) {
+  return new ValidationObjectError(descriptor);
+}
+
+export function arrayError(descriptor: [number, ValidationError][]) {
+  return new ValidationArrayError(descriptor);
 }
