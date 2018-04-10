@@ -64,3 +64,7 @@ export function objectError(descriptor: [string, ValidationError][]) {
 export function arrayError(descriptor: [number, ValidationError][]) {
   return new ValidationArrayError(descriptor);
 }
+
+export function propertyError(property: string, err: ValidationError) {
+  return new ValidationPropertyError(property, err);
+}

@@ -3,8 +3,8 @@ export {
   number,
   string,
   object,
-  array,
   def,
   undef,
+  nil,
   any
 } from "./validator";

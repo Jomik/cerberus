@@ -4,8 +4,6 @@ import { number } from "../src";
 
 describe("number", () => {
   describe("accepts", () => {
-    it("numbers", () => {
-      const { result } = number.validate(42);
-    });
+    it("numbers", () => {});
   });
 });

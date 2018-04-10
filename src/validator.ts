@@ -4,15 +4,16 @@ import {
   error,
   typeError,
   objectError,
-  arrayError
+  arrayError,
+  propertyError
 } from "./error";
-import { Id } from "./types";
+import { Id, ZeroArgFunctionNames, NonFunctionNames, TypeClass } from "./types";
 // tslint:disable:variable-name
 
 export type SchemaEntry<A extends object, B> =
   | Validator<B>
   | ((obj: A) => Validator<B>);
-export type Schema<A extends object> = { [k in keyof A]: SchemaEntry<A, A[k]> };
+export type Schema<A extends object> = { [K in keyof A]: SchemaEntry<A, A[K]> };
 
 export class Validator<A> {
   constructor(protected _validate: (obj: A) => Result<A>) {}
@@ -54,10 +55,6 @@ export class TypeValidator<A> extends BaseValidator<A> {
     });
   }
 
-  and<B>(c: (obj: A) => Result<A & B>): TypeValidator<A & B> {
-    return typeValidator((o) => this.validate(o).chain(c));
-  }
-
   or<B>(v: Validator<B>): TypeValidator<A | B> {
     return typeValidator((o) =>
       this.validate(o).match<Result<A | B>>({
@@ -68,7 +65,9 @@ export class TypeValidator<A> extends BaseValidator<A> {
   }
 
   satisfy(c: (obj: A) => boolean, err: ValidationError): TypeValidator<A> {
-    return this.and((o) => (c(o) ? valid(o) : invalid(err)));
+    return typeValidator((o) =>
+      this.validate(o).chain((obj) => (c(obj) ? valid(obj) : invalid(err)))
+    );
   }
 
   map<B>(f: (obj: A) => B): TypeValidator<B> {
@@ -78,6 +77,42 @@ export class TypeValidator<A> extends BaseValidator<A> {
         invalid: (err) => invalid(err)
       })
     );
+  }
+
+  property<
+    B extends
+      | NonFunctionNames<TypeClass<A>>
+      | ZeroArgFunctionNames<TypeClass<A>>
+  >(
+    prop: B,
+    f: (
+      v: TypeValidator<
+        TypeClass<A>[B] extends () => any
+          ? ReturnType<TypeClass<A>[B]>
+          : TypeClass<A>[B]
+      >
+    ) => Validator<any>
+  ): TypeValidator<A> {
+    return typeValidator((o) =>
+      this.validate(o).match({
+        valid: (val) => {
+          const p = (<TypeClass<A>>val)[prop];
+          const value = typeof p === "function" ? (<Function>p).bind(val)() : p;
+          return f(definedType)
+            .validate(value)
+            .match<Result<A>>({
+              valid: () => valid(val),
+              invalid: (err) => invalid(propertyError(prop, err))
+            });
+        },
+        invalid: (err) => invalid(err)
+      })
+    );
+  }
+
+  // String validations
+  includes(this: TypeValidator<string>, str: string): TypeValidator<string> {
+    return this.satisfy((s) => s.includes(str), error(`must include ${str}`));
   }
 
   // Number validations
@@ -120,7 +155,7 @@ export class TypeValidator<A> extends BaseValidator<A> {
     h: number
   ): TypeValidator<number> {
     return this.satisfy(
-      (n) => n > l && n < h,
+      (i) => i > l && i < h,
       error(`must be between ${l} and ${h}`)
     );
   }
@@ -138,10 +173,18 @@ export function typeValidator<A>(v: (object: A) => Result<A>) {
   return new TypeValidator<A>(v);
 }
 
+const definedType = typeValidator<any>(
+  (p) =>
+    p !== undefined && p !== null
+      ? valid(p)
+      : invalid(typeError("must be defined"))
+);
+
 export const number = typeValidator<number>(
   (o: any) =>
     typeof o === "number" ? valid(o) : invalid(typeError("must be a number"))
 );
+export const integer = number.integer();
 
 export const string = typeValidator<string>(
   (o: any) =>
@@ -165,18 +208,11 @@ export const undef = baseValidator<undefined>(
     o === undefined ? valid(o) : invalid(typeError("must be undefined"))
 );
 
-export const any = baseValidator<any>(valid);
+export const nil = baseValidator<null>(
+  (o: any) => (o === null ? valid(o) : invalid(typeError("must be null")))
+);
 
-function update<A>(vali: Validator<A>, o: A, k: string, obj: any, err: any) {
-  vali.validate(o).match({
-    valid: (v) => {
-      obj[k] = v;
-    },
-    invalid: (e) => {
-      err[k] = e;
-    }
-  });
-}
+export const any = baseValidator<any>(valid);
 
 function objectValidator<A extends object, B>(
   schema: Schema<A>,
@@ -215,7 +251,7 @@ function objectValidator<A extends object, B>(
   return typeValidator((o: any) => {
     if (typeof o === "object" && !Array.isArray(o)) {
       const keys = new Set(Object.keys(o));
-      let obj: A = <any>{};
+      let obj: A & { [index: string]: B } = <any>{};
       let err: [string, ValidationError][] = [];
       let errored = false;
 
