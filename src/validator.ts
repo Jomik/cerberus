@@ -7,8 +7,8 @@ import {
   arrayError,
   propertyError
 } from "./error";
-import { Id, ZeroArgFunctionNames, NonFunctionNames, TypeClass } from "./types";
-import { or, and } from "./functions";
+import { Id } from "./types";
+import { or, xor, and } from "./functions";
 // tslint:disable:variable-name
 
 export type SchemaEntry<A extends object, B> =
@@ -63,6 +63,10 @@ export class TypeValidator<A> extends BaseValidator<A> {
   and<B>(right: TypeValidator<B>): TypeValidator<A & B>;
   and<B>(right: TypeValidator<B>) {
     return and(this, right);
+  }
+
+  xor<B>(right: TypeValidator<B>): TypeValidator<A | B> {
+    return xor(this, right);
   }
 
   satisfy(c: (obj: A) => boolean, err: ValidationError): TypeValidator<A> {
@@ -231,7 +235,7 @@ function objectValidator<A extends object, B>(
 
 function objectValidator<A extends object, B>(
   schema: Schema<A>,
-  options: { rest?: SchemaEntry<A, B>; strict?: boolean } = { strict: true }
+  options: { rest?: SchemaEntry<A, B>; strict?: boolean } = { strict: false }
 ): TypeValidator<A> {
   const schemaEntries: [
     keyof A,
@@ -305,7 +309,7 @@ function objectValidator<A extends object, B>(
             }
           });
         }
-      } else if (options.strict === true) {
+      } else if (options.strict) {
         if (keys.size > 0) {
           return invalid(
             error(`unknown key(s): ${Array.from(keys).join(", ")}`)

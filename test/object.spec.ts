@@ -50,12 +50,9 @@ describe("object", () => {
     const schema = object({ a: any }, { strict: true });
     expect(schema.validate({ a: 42 }), "accept strict").to.be.valid;
     expect(schema.validate({ a: 42, b: 42 }), "reject strict").to.not.be.valid;
-    const defaultSchema = object({ a: any });
-    expect(defaultSchema.validate({ a: 42, b: 42 }), "strict default").to.not.be
-      .valid;
   });
   it("non strict option", () => {
-    const schema = object({ a: number }, { strict: false });
+    const schema = object({ a: number });
     expect(schema.validate({ a: 42, b: 42 })).to.be.valid.and.have.result({
       a: 42,
       b: 42

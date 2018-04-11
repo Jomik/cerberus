@@ -16,10 +16,18 @@ export class ValidationError extends Error {
   }
 }
 
+export function error(message: string) {
+  return new ValidationError(message);
+}
+
 export class ValidationTypeError extends ValidationError {
   constructor(message: string) {
     super(message);
   }
+}
+
+export function typeError(message: string) {
+  return new ValidationTypeError(message);
 }
 
 export class ValidationObjectError extends ValidationError {
@@ -33,6 +41,10 @@ export class ValidationObjectError extends ValidationError {
   }
 }
 
+export function objectError(descriptor: [string, ValidationError][]) {
+  return new ValidationObjectError(descriptor);
+}
+
 export class ValidationArrayError extends ValidationError {
   constructor(public readonly descriptor: [number, ValidationError][]) {
     super("must satisfy validator");
@@ -44,28 +56,29 @@ export class ValidationArrayError extends ValidationError {
   }
 }
 
+export function arrayError(descriptor: [number, ValidationError][]) {
+  return new ValidationArrayError(descriptor);
+}
+
 export class ValidationPropertyError extends ValidationError {
   constructor(public readonly property: string, err: ValidationError) {
     super(`property ${property} ${err.message}`);
   }
 }
 
-export function error(message: string) {
-  return new ValidationError(message);
-}
-
-export function typeError(message: string) {
-  return new ValidationTypeError(message);
-}
-
-export function objectError(descriptor: [string, ValidationError][]) {
-  return new ValidationObjectError(descriptor);
-}
-
-export function arrayError(descriptor: [number, ValidationError][]) {
-  return new ValidationArrayError(descriptor);
-}
-
 export function propertyError(property: string, err: ValidationError) {
   return new ValidationPropertyError(property, err);
+}
+
+export class ValidationOrError extends ValidationError {
+  constructor(
+    public readonly left: ValidationError,
+    public readonly right: ValidationError
+  ) {
+    super(`must fix ${left.details()} or ${right.details()}`);
+  }
+}
+
+export function orError(left: ValidationError, right: ValidationError) {
+  return new ValidationOrError(left, right);
 }
