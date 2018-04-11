@@ -1,4 +1,4 @@
-import { ValidationError } from "./error";
+import { ValidationError } from "./errors";
 
 export type ResultMatch<A, K> = {
   valid: (value: A) => K;
@@ -6,7 +6,7 @@ export type ResultMatch<A, K> = {
 };
 
 export abstract class Result<A> {
-  public abstract readonly result:
+  abstract readonly result:
     | { valid: true; object: A }
     | { valid: false; error: ValidationError };
 
@@ -21,7 +21,7 @@ export abstract class Result<A> {
 }
 
 export class ValidResult<A> extends Result<A> {
-  result: { valid: true; object: A };
+  readonly result: { valid: true; object: A };
   constructor(object: A) {
     super();
     this.result = { valid: true, object };
@@ -33,7 +33,7 @@ export class ValidResult<A> extends Result<A> {
 }
 
 export class InvalidResult extends Result<any> {
-  result: { valid: false; error: ValidationError };
+  readonly result: { valid: false; error: ValidationError };
   constructor(error: ValidationError) {
     super();
     this.result = { valid: false, error };

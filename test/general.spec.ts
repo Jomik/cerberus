@@ -2,8 +2,8 @@ import "mocha";
 import * as QC from "proptest";
 import { expect } from "chai";
 import {
-  def,
-  undef,
+  required,
+  forbidden,
   nil,
   any,
   boolean,
@@ -31,16 +31,18 @@ describe("trivial types", () => {
     });
   });
   it("defined", () => {
-    expect(def.validate(undefined), "not defined undefined").to.not.be.valid;
-    expect(def.validate(null), "not defined null").to.not.be.valid;
+    expect(required.validate(undefined), "not defined undefined").to.not.be
+      .valid;
+    expect(required.validate(null), "not defined null").to.not.be.valid;
     ["foo", 42, [], {}, true].forEach((e) => {
-      expect(def.validate(e), `defined ${typeof e}`).to.be.valid;
+      expect(required.validate(e), `defined ${typeof e}`).to.be.valid;
     });
   });
   it("undefined", () => {
-    expect(undef.validate(undefined)).to.be.valid;
+    expect(forbidden.validate(undefined)).to.be.valid;
     ["foo", 42, [], {}, null, true].forEach((e) => {
-      expect(undef.validate(e), `not undefined ${typeof e}`).to.not.be.valid;
+      expect(forbidden.validate(e), `not undefined ${typeof e}`).to.not.be
+        .valid;
     });
   });
   it("null", () => {

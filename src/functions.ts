@@ -1,26 +1,21 @@
-import {
-  TypeValidator,
-  typeValidator,
-  BaseValidator,
-  baseValidator
-} from "./validator";
+import { TypeValidator, typeValidator } from "./validator";
 import { valid, Result, invalid } from "./result";
 import { Id } from "./types";
 import { error, orError } from ".";
 
-export function is<A>(a: A): BaseValidator<A> {
-  return baseValidator(
+export function is<A>(a: A): TypeValidator<A> {
+  return typeValidator(
     (o) => (o === a ? valid(o) : invalid(error(`must be ${a}`)))
   );
 }
 
-export function oneOf<A, B, C>(...args: [A, B, C][]): BaseValidator<[A, B, C]>;
-export function oneOf<A, B>(...args: [A, B][]): BaseValidator<[A, B]>;
-export function oneOf<A extends string>(...args: A[]): BaseValidator<A>;
-export function oneOf<A extends number>(...args: A[]): BaseValidator<A>;
-export function oneOf<A>(...args: A[]): BaseValidator<A>;
-export function oneOf<A>(...args: A[]): BaseValidator<A> {
-  return baseValidator(
+export function oneOf<A, B, C>(...args: [A, B, C][]): TypeValidator<[A, B, C]>;
+export function oneOf<A, B>(...args: [A, B][]): TypeValidator<[A, B]>;
+export function oneOf<A extends string>(...args: A[]): TypeValidator<A>;
+export function oneOf<A extends number>(...args: A[]): TypeValidator<A>;
+export function oneOf<A>(...args: A[]): TypeValidator<A>;
+export function oneOf<A>(...args: A[]): TypeValidator<A> {
+  return typeValidator(
     (o) =>
       args.includes(o)
         ? valid(o)

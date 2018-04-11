@@ -1,7 +1,7 @@
 import "mocha";
 import * as QC from "proptest";
 import { expect } from "chai";
-import { number, integer, TypeValidator } from "../src";
+import { number, integer } from "../src";
 // tslint:disable:no-unused-expression
 
 const property = QC.createProperty(it);

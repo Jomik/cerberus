@@ -1,6 +1,6 @@
 import "mocha";
 import { expect } from "chai";
-import { number, string, object, is, oneOf } from "../src";
+import { number, string, object, is, oneOf, or } from "../src";
 // tslint:disable:no-unused-expression
 
 describe("is", () => {

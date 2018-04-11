@@ -4,9 +4,9 @@ import {
   error,
   typeError,
   objectError,
-  arrayError,
-  propertyError
-} from "./error";
+  propertyError,
+  arrayError
+} from "./errors";
 import { Id } from "./types";
 import { or, xor, and } from "./functions";
 // tslint:disable:variable-name
@@ -33,7 +33,11 @@ export class Validator<A> {
   }
 }
 
-export class BaseValidator<A> extends Validator<A> {
+export function validator<A>(v: (object: A) => Result<A>) {
+  return new Validator<A>(v);
+}
+
+export class TypeValidator<A> extends Validator<A> {
   constructor(_validate: (obj: A) => Result<A>) {
     super(_validate);
   }
@@ -44,12 +48,6 @@ export class BaseValidator<A> extends Validator<A> {
 
   default(d: A): Validator<A> {
     return validator((o) => (o === undefined ? valid(d) : this.validate(o)));
-  }
-}
-
-export class TypeValidator<A> extends BaseValidator<A> {
-  constructor(_validate: (obj: A) => Result<A>) {
-    super(_validate);
   }
 
   or<B>(right: TypeValidator<B>): TypeValidator<A | B> {
@@ -87,15 +85,15 @@ export class TypeValidator<A> extends BaseValidator<A> {
   // Shared validations
   length(
     this: TypeValidator<string>,
-    f: (v: TypeValidator<number>) => BaseValidator<any>
+    f: (v: TypeValidator<number>) => TypeValidator<any>
   ): TypeValidator<A>;
   length(
     this: TypeValidator<any[]>,
-    f: (v: TypeValidator<number>) => BaseValidator<any>
+    f: (v: TypeValidator<number>) => TypeValidator<any>
   ): TypeValidator<A>;
   length(
     this: TypeValidator<any>,
-    f: (v: TypeValidator<number>) => BaseValidator<any>
+    f: (v: TypeValidator<number>) => TypeValidator<any>
   ): TypeValidator<A> {
     return typeValidator((o) =>
       this.validate(o)
@@ -174,14 +172,6 @@ export class TypeValidator<A> extends BaseValidator<A> {
   }
 }
 
-export function validator<A>(v: (object: A) => Result<A>) {
-  return new Validator<A>(v);
-}
-
-export function baseValidator<A>(v: (object: A) => Result<A>) {
-  return new BaseValidator<A>(v);
-}
-
 export function typeValidator<A>(v: (object: A) => Result<A>) {
   return new TypeValidator<A>(v);
 }
@@ -202,23 +192,23 @@ export const boolean = typeValidator<boolean>(
     typeof o === "boolean" ? valid(o) : invalid(typeError("must be a boolean"))
 );
 
-export const def = baseValidator<any>(
+export const required = typeValidator<any>(
   (o: any) =>
     o !== undefined && o !== null
       ? valid(o)
       : invalid(typeError("must be defined"))
 );
 
-export const undef = baseValidator<undefined>(
+export const forbidden = typeValidator<undefined>(
   (o: any) =>
     o === undefined ? valid(o) : invalid(typeError("must be undefined"))
 );
 
-export const nil = baseValidator<null>(
+export const nil = typeValidator<null>(
   (o: any) => (o === null ? valid(o) : invalid(typeError("must be null")))
 );
 
-export const any = baseValidator<any>(valid);
+export const any = typeValidator<any>(valid);
 const anyType = typeValidator<any>(valid);
 
 function objectValidator<A extends object, B>(
