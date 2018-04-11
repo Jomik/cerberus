@@ -1,7 +1,29 @@
 import "mocha";
 import { expect } from "chai";
-import { number, string, object } from "../src";
+import { number, string, object, is, oneOf } from "../src";
 // tslint:disable:no-unused-expression
+
+describe("is", () => {
+  it("accepts", () => {
+    expect(is("foo").validate("foo")).to.be.valid;
+  });
+  it("rejects", () => {
+    ["bar", 42, {}, [], true].forEach((e) => {
+      expect(is("foo").validate(e), `reject ${typeof e}`).to.not.be.valid;
+    });
+  });
+});
+
+describe("oneOf", () => {
+  it("accepts", () => {
+    expect(
+      oneOf("foo", "bar", "baz").validate("bar")
+    ).to.be.valid.and.have.result("bar");
+  });
+  it("rejects", () => {
+    expect(oneOf("foo", "bar", "baz").validate("buz")).to.not.be.valid;
+  });
+});
 
 describe("or", () => {
   it("left", () => {
