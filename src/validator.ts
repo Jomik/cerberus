@@ -190,13 +190,6 @@ export function typeValidator<A>(v: (object: A) => Result<A>) {
   return new TypeValidator<A>(v);
 }
 
-const definedType = typeValidator<any>(
-  (p) =>
-    p !== undefined && p !== null
-      ? valid(p)
-      : invalid(typeError("must be defined"))
-);
-
 export const number = typeValidator<number>(
   (o: any) =>
     typeof o === "number" ? valid(o) : invalid(typeError("must be a number"))
@@ -230,6 +223,7 @@ export const nil = baseValidator<null>(
 );
 
 export const any = baseValidator<any>(valid);
+const anyType = typeValidator<any>(valid);
 
 function objectValidator<A extends object, B>(
   schema: Schema<A>,
