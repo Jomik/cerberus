@@ -2,6 +2,7 @@ export class ValidationError extends Error {
   constructor(message: string) {
     super(message);
     this.name = this.constructor.name;
+    // Restore prototype chain
     const actualProto = new.target.prototype;
     if (Object.setPrototypeOf) {
       Object.setPrototypeOf(this, actualProto);
