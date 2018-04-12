@@ -8,6 +8,7 @@ import {
   propertyError
 } from "./error";
 import { Id, ZeroArgFunctionNames, NonFunctionNames, TypeClass } from "./types";
+import { or, and } from "./functions";
 // tslint:disable:variable-name
 
 export type SchemaEntry<A extends object, B> =
@@ -51,31 +52,22 @@ export class TypeValidator<A> extends BaseValidator<A> {
     super(_validate);
   }
 
-  chain<B>(c: (obj: A) => TypeValidator<B>): TypeValidator<B> {
-    return typeValidator((o) => {
-      const result = this.validate(o);
-      return result.match({
-        valid: (a) => {
-          const validator2 = c(a);
-          return validator2.validate(a);
-        },
-        invalid: (err) => invalid(err)
-      });
-    });
+  or<B>(right: TypeValidator<B>): TypeValidator<A | B> {
+    return or(this, right);
   }
 
-  or<B>(v: Validator<B>): TypeValidator<A | B> {
-    return typeValidator((o) =>
-      this.validate(o).match<Result<A | B>>({
-        valid: (a) => valid(a),
-        invalid: () => v.validate(o)
-      })
-    );
+  and<B extends object>(
+    this: TypeValidator<object>,
+    right: TypeValidator<B>
+  ): TypeValidator<Id<A & B>>;
+  and<B>(right: TypeValidator<B>): TypeValidator<A & B>;
+  and<B>(right: TypeValidator<B>) {
+    return and(this, right);
   }
 
   satisfy(c: (obj: A) => boolean, err: ValidationError): TypeValidator<A> {
     return typeValidator((o) =>
-      this.validate(o).chain((obj) => (c(obj) ? valid(obj) : invalid(err)))
+      this.validate(o).chain<A>((obj) => (c(obj) ? valid(obj) : invalid(err)))
     );
   }
 
