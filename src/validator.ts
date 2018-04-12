@@ -125,6 +125,21 @@ export class TypeValidator<A> extends BaseValidator<A> {
     );
   }
 
+  multiple(this: TypeValidator<number>, n: number): TypeValidator<number> {
+    return this.satisfy(
+      (i) => Number.isInteger(i / n),
+      error(`must be a multiple of ${n}`)
+    );
+  }
+
+  positive(this: TypeValidator<number>): TypeValidator<number> {
+    return this.gt(0);
+  }
+
+  negative(this: TypeValidator<number>): TypeValidator<number> {
+    return this.lt(0);
+  }
+
   gt(this: TypeValidator<number>, n: number): TypeValidator<number> {
     return this.satisfy((i) => i > n, error(`must be greater than ${n}`));
   }
