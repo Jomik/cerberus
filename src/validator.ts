@@ -21,6 +21,15 @@ export class Validator<A> {
   validate(value: any): Result<A> {
     return this._validate(value);
   }
+
+  test(value: any): A {
+    return this._validate(value).match({
+      valid: (val) => val,
+      invalid: (err) => {
+        throw err;
+      }
+    });
+  }
 }
 
 export class BaseValidator<A> extends Validator<A> {
