@@ -119,8 +119,9 @@ export class TypeValidator<A> extends BaseValidator<A> {
     );
   }
 
-  // String validations
-  includes(this: TypeValidator<string>, str: string): TypeValidator<string> {
+  includes<B>(this: TypeValidator<B[]>, str: B): TypeValidator<A>;
+  includes(this: TypeValidator<string>, str: string): TypeValidator<A>;
+  includes(this: TypeValidator<any>, str: any): TypeValidator<A> {
     return this.satisfy((s) => s.includes(str), error(`must include ${str}`));
   }
 
