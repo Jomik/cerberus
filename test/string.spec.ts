@@ -13,9 +13,14 @@ describe("string", () => {
       expect(string.validate(e), `reject ${typeof e}`).to.not.be.valid;
     });
   });
-  it("includes", () => {
-    const schema = string.includes("foo");
-    expect(schema.validate("barfoobaz")).to.be.valid;
-    expect(schema.validate("baroobaz")).to.not.be.valid;
+  it("matches", () => {
+    const schema = string.matches(/[a-z]+/);
+    expect(schema.validate("foo")).to.be.valid;
+    expect(schema.validate("BAR")).to.not.be.valid;
+  });
+  it("alphanum", () => {
+    const schema = string.alphanum();
+    expect(schema.validate("fooBAR1235")).to.be.valid;
+    expect(schema.validate("foo_bar.car@bar.at.com")).to.not.be.valid;
   });
 });

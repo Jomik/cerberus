@@ -9,6 +9,7 @@ import {
 } from "./errors";
 import { Id } from "./types";
 import { or, xor, and } from "./functions";
+import { ALPHANUM } from "./utils";
 // tslint:disable:variable-name
 
 export type SchemaEntry<A extends object, B> =
@@ -109,6 +110,18 @@ export class TypeValidator<A> extends Validator<A> {
   includes(this: TypeValidator<string>, str: string): TypeValidator<A>;
   includes(this: TypeValidator<any>, str: any): TypeValidator<A> {
     return this.satisfy((s) => s.includes(str), error(`must include ${str}`));
+  }
+
+  // String validations
+  matches(this: TypeValidator<string>, exp: RegExp): TypeValidator<string> {
+    return this.satisfy((s) => exp.test(s), error(`must match ${exp.source}`));
+  }
+
+  alphanum(this: TypeValidator<string>): TypeValidator<string> {
+    return this.satisfy(
+      (s) => ALPHANUM.test(s),
+      error("must only contain alphahumeric characters")
+    );
   }
 
   // Number validations
