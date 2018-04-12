@@ -1,98 +1,84 @@
-import { stringify } from "./utils";
-
-export class ValidationError {
-  get name(): string {
-    return this.constructor.name;
+export class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    // Restore prototype chain
+    const actualProto = new.target.prototype;
+    if (Object.setPrototypeOf) {
+      Object.setPrototypeOf(this, actualProto);
+    } else {
+      (<any>this).__proto__ = new.target.prototype;
+    }
   }
-  path: (string | number)[] = [];
-  fatal: boolean = false;
 
+  details(): string {
+    return this.message;
+  }
+}
+
+export function error(message: string) {
+  return new ValidationError(message);
+}
+
+export class ValidationTypeError extends ValidationError {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
+export function typeError(message: string) {
+  return new ValidationTypeError(message);
+}
+
+export class ValidationObjectError extends ValidationError {
+  constructor(public readonly descriptor: [string, ValidationError][]) {
+    super("must satisfy schema");
+  }
+
+  details(): string {
+    let messages = this.descriptor.map(([k, e]) => `${k}: ${e.details()}`);
+    return `{ ${messages.join(", ")} }`;
+  }
+}
+
+export function objectError(descriptor: [string, ValidationError][]) {
+  return new ValidationObjectError(descriptor);
+}
+
+export class ValidationArrayError extends ValidationError {
+  constructor(public readonly descriptor: [number, ValidationError][]) {
+    super("must satisfy validator");
+  }
+
+  details(): string {
+    let messages = this.descriptor.map(([i, e]) => `[${i}]: ${e.details()}`);
+    return messages.join(", ");
+  }
+}
+
+export function arrayError(descriptor: [number, ValidationError][]) {
+  return new ValidationArrayError(descriptor);
+}
+
+export class ValidationPropertyError extends ValidationError {
+  constructor(public readonly property: string, err: ValidationError) {
+    super(`property ${property} ${err.message}`);
+  }
+}
+
+export function propertyError(property: string, err: ValidationError) {
+  return new ValidationPropertyError(property, err);
+}
+
+export class ValidationOrError extends ValidationError {
   constructor(
-    public obj: any,
-    public message: string,
-    private suffix?: string
-  ) {}
-
-  pathToString(source?: string): string {
-    return this.path.reduce<string>(
-      (acc, cur) => acc + (typeof cur === "number" ? `[${cur}]` : `.${cur}`),
-      source || ""
-    );
-  }
-
-  toString(source?: string): string {
-    const what =
-      stringify(this.obj) + (this.suffix !== undefined ? this.suffix : "");
-    const prefix =
-      this.path.length > 0
-        ? `${this.pathToString(source)} is ${what} but`
-        : source || what;
-    return `${prefix} must ${this.message}`;
-  }
-}
-
-export class MissingError extends ValidationError {
-  constructor(obj: any) {
-    super(obj, "be defined");
-    this.fatal = true;
-  }
-
-  toString(source?: string): string {
-    const prefix =
-      this.path.length > 0
-        ? `${this.pathToString(source)}`
-        : source || stringify(this.obj);
-    return `${prefix} must be defined`;
-  }
-}
-
-export class TypeError extends ValidationError {
-  constructor(obj: any, public type: string) {
-    super(obj, `be of type ${type}`);
-    this.fatal = true;
-  }
-}
-
-export class ConstraintError extends ValidationError {
-  constructor(
-    obj: any,
-    message: string,
-    public type: string,
-    public constraint?: any,
-    public prop?: string
+    public readonly left: ValidationError,
+    public readonly right: ValidationError
   ) {
-    super(obj, message, prop !== undefined ? `.${prop}` : undefined);
+    super(`must fix ${left.details()} or ${right.details()}`);
   }
 }
 
-export class ValueError extends ValidationError {
-  values: any[];
-  constructor(obj: any, values: any[]) {
-    const strings = values.map(stringify);
-    super(
-      obj,
-      `be ${
-        strings.length > 1
-          ? `${strings.slice(0, -1).join(", ")} or ${strings.slice(-1)}`
-          : strings[0]
-      }`
-    );
-    this.values = values;
-  }
-}
-
-export class AlternativesError extends ValidationError {
-  constructor(obj: any, public errors: ValidationError[][]) {
-    super(obj, "match a schema");
-  }
-
-  toString(source?: string): string {
-    const prefix =
-      this.path.length > 0
-        ? `${this.pathToString(source)}`
-        : source || stringify(this.obj);
-    return `${prefix} must fix any set of the following errors:\n(${this.errors
-      .map((earr) => earr.map((e) => e.toString(source)).join(", "))
-      .join("),\n(")})`;
-  }
+export function orError(left: ValidationError, right: ValidationError) {
+  return new ValidationOrError(left, right);
 }
