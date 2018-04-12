@@ -88,34 +88,26 @@ export class TypeValidator<A> extends BaseValidator<A> {
     );
   }
 
-  property<
-    B extends
-      | NonFunctionNames<TypeClass<A>>
-      | ZeroArgFunctionNames<TypeClass<A>>
-  >(
-    prop: B,
-    f: (
-      v: TypeValidator<
-        TypeClass<A>[B] extends () => any
-          ? ReturnType<TypeClass<A>[B]>
-          : TypeClass<A>[B]
-      >
-    ) => Validator<any>
+  // Shared validations
+  length(
+    this: TypeValidator<string>,
+    f: (v: TypeValidator<number>) => BaseValidator<any>
+  ): TypeValidator<A>;
+  length(
+    this: TypeValidator<any[]>,
+    f: (v: TypeValidator<number>) => BaseValidator<any>
+  ): TypeValidator<A>;
+  length(
+    this: TypeValidator<any>,
+    f: (v: TypeValidator<number>) => BaseValidator<any>
   ): TypeValidator<A> {
     return typeValidator((o) =>
-      this.validate(o).match({
-        valid: (val) => {
-          const p = (<TypeClass<A>>val)[prop];
-          const value = typeof p === "function" ? (<Function>p).bind(val)() : p;
-          return f(definedType)
-            .validate(value)
-            .match<Result<A>>({
-              valid: () => valid(val),
-              invalid: (err) => invalid(propertyError(prop, err))
-            });
-        },
-        invalid: (err) => invalid(err)
-      })
+      this.validate(o)
+        .chain((a) => f(anyType).validate(a.length))
+        .match<Result<A>>({
+          valid: () => valid(o),
+          invalid: (err) => invalid(propertyError("length", err))
+        })
     );
   }
 
