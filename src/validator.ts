@@ -68,7 +68,10 @@ export class TypeValidator<A> extends Validator<A> {
     return xor(this, right);
   }
 
-  satisfy(c: (obj: A) => boolean, err: ValidationError): TypeValidator<A> {
+  satisfy(
+    c: (obj: A) => boolean,
+    err: ValidationError = error("no description")
+  ): TypeValidator<A> {
     return typeValidator((o) =>
       this.validate(o).chain<A>((obj) => (c(obj) ? valid(obj) : invalid(err)))
     );
