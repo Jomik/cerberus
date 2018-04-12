@@ -239,7 +239,7 @@ function objectValidator<A extends object, B>(
 
 function objectValidator<A extends object, B>(
   schema: Schema<A>,
-  options?: { rest?: SchemaEntry<A, B>; strict?: boolean }
+  options: { rest?: SchemaEntry<A, B>; strict?: boolean } = { strict: true }
 ): TypeValidator<A> {
   const schemaEntries: [
     keyof A,
@@ -248,8 +248,8 @@ function objectValidator<A extends object, B>(
   ][] = <any>Object.entries(schema);
   schemaEntries.reduce((acc, arr) => arr.push(++acc), -1);
   schemaEntries.sort((a, b) => {
-    const aFunc = typeof a[0] === "function";
-    const bFunc = typeof b[0] === "function";
+    const aFunc = typeof a[1] === "function";
+    const bFunc = typeof b[1] === "function";
     if ((aFunc && bFunc) || (!aFunc && !bFunc)) {
       return a[2] - b[2];
     } else if (aFunc && !bFunc) {
@@ -299,29 +299,29 @@ function objectValidator<A extends object, B>(
         return invalid(objectError(err));
       }
 
-      if (options !== undefined) {
-        if (options.rest !== undefined) {
-          const v =
-            typeof options.rest === "function"
-              ? options.rest(obj)
-              : options.rest;
-          for (const k of keys) {
-            v.validate(o[k]).match({
-              valid: (val) => {
-                obj[k] = val;
-              },
-              invalid: (e) => {
-                err.push([k, e]);
-                errored = true;
-              }
-            });
-          }
-        } else if (options.strict !== undefined && options.strict === true) {
-          if (keys.size > 0) {
-            return invalid(
-              error(`unknown key(s): ${Array.from(keys).join(", ")}`)
-            );
-          }
+      if (options.rest !== undefined) {
+        const v =
+          typeof options.rest === "function" ? options.rest(obj) : options.rest;
+        for (const k of keys) {
+          v.validate(o[k]).match({
+            valid: (val) => {
+              obj[k] = val;
+            },
+            invalid: (e) => {
+              err.push([k, e]);
+              errored = true;
+            }
+          });
+        }
+      } else if (options.strict === true) {
+        if (keys.size > 0) {
+          return invalid(
+            error(`unknown key(s): ${Array.from(keys).join(", ")}`)
+          );
+        }
+      } else {
+        for (const k of keys) {
+          obj[k] = o[k];
         }
       }
 
