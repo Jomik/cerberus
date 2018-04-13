@@ -1,7 +1,7 @@
 import { Validator } from "./validator";
 import { Result, invalid, valid } from "./result";
 import { orError, error } from "./errors";
-import { Id } from "./types";
+import { Id, IsAsync } from "./types";
 
 // export function is<A>(a: A): TypeValidator<A> {
 //   return typeValidator(
@@ -23,35 +23,54 @@ import { Id } from "./types";
 //   );
 // }
 
-export class AndValidator<A, PB, B> extends Validator<Id<A & B>> {
-  constructor(private left: Validator<A>, private right: Validator<B>) {
+export class AndValidator<
+  PA extends boolean,
+  A,
+  PB extends boolean,
+  B
+> extends Validator<PA | PB, Id<A & B>> {
+  constructor(private left: Validator<PA, A>, private right: Validator<PB, B>) {
     super();
   }
 
-  validate(value: any) {
+  validate(
+    this: AndValidator<false, A, false, B>,
+    value: any
+  ): Result<Id<A & B>> {
     return <Result<Id<A & B>>>this.left
       .validate(value)
       .chain(() => this.right.validate(value));
   }
+
+  async asyncValidate(value: any) {
+    return (<any>this.left)
+      .asyncValidate(value)
+      .then((res) => (<any>this.right).asyncValidate(value));
+  }
 }
 
-export function and<PA, A, PB, B>(
-  left: Validator<A>,
-  right: Validator<B>
-): Validator<Id<A & B>> {
+export function and<PA extends boolean, A, PB extends boolean, B>(
+  left: Validator<PA, A>,
+  right: Validator<PB, B>
+): Validator<PA | PB, Id<A & B>> {
   return new AndValidator(left, right);
 }
 
-export class OrValidator<A, PB, B> extends Validator<A | B> {
-  constructor(private left: Validator<A>, private right: Validator<B>) {
+export class OrValidator<
+  PA extends boolean,
+  A,
+  PB extends boolean,
+  B
+> extends Validator<PA | PB, A | B> {
+  constructor(private left: Validator<PA, A>, private right: Validator<PB, B>) {
     super();
   }
 
   validate(value: any) {
-    return this.left.validate(value).match({
+    return (<any>this.left).validate(value).match({
       valid: (a) => valid(a),
       invalid: (l) =>
-        this.right.validate(value).match({
+        (<any>this.right).validate(value).match({
           valid: (b) => valid(b),
           invalid: (r) => invalid<A | B>(orError(l, r))
         })
@@ -59,11 +78,11 @@ export class OrValidator<A, PB, B> extends Validator<A | B> {
   }
 
   async asyncValidate(value: any) {
-    const lr = await this.left.asyncValidate(value);
+    const lr = await (<any>this.left).asyncValidate(value);
     return lr.match({
       valid: async () => lr,
       invalid: async (le) => {
-        const rr = await this.right.asyncValidate(value);
+        const rr = await (<any>this.right).asyncValidate(value);
         return rr.match({
           valid: () => rr,
           invalid: (re) => invalid<A | B>(orError(le, re))
@@ -72,21 +91,26 @@ export class OrValidator<A, PB, B> extends Validator<A | B> {
     });
   }
 }
-export function or<PA, A, PB, B>(
-  left: Validator<A>,
-  right: Validator<B>
-): Validator<A | B> {
+export function or<PA extends boolean, A, PB extends boolean, B>(
+  left: Validator<PA, A>,
+  right: Validator<PB, B>
+): Validator<PA | PB, A | B> {
   return new OrValidator(left, right);
 }
 
-export class XOrValidator<A, PB, B> extends Validator<A | B> {
-  constructor(private left: Validator<A>, private right: Validator<B>) {
+export class XOrValidator<
+  PA extends boolean,
+  A,
+  PB extends boolean,
+  B
+> extends Validator<PA | PB, A | B> {
+  constructor(private left: Validator<PA, A>, private right: Validator<PB, B>) {
     super();
   }
 
   validate(value: any) {
-    const lr = this.left.validate(value);
-    const rr = this.right.validate(value);
+    const lr = (<any>this.left).validate(value);
+    const rr = (<any>this.right).validate(value);
     if (lr.result.valid) {
       if (!rr.result.valid) {
         return lr;
@@ -99,11 +123,11 @@ export class XOrValidator<A, PB, B> extends Validator<A | B> {
   }
 
   async asyncValidate(value: any) {
-    const lr = await this.left.asyncValidate(value);
+    const lr = await (<any>this.left).asyncValidate(value);
     return lr.match({
       valid: async () => lr,
       invalid: async (le) => {
-        const rr = await this.right.asyncValidate(value);
+        const rr = await (<any>this.right).asyncValidate(value);
         return rr.match({
           valid: () => rr,
           invalid: (re) => invalid<A | B>(orError(le, re))
@@ -112,9 +136,9 @@ export class XOrValidator<A, PB, B> extends Validator<A | B> {
     });
   }
 }
-export function xor<PA, A, PB, B>(
-  left: Validator<A>,
-  right: Validator<B>
-): Validator<A | B> {
+export function xor<PA extends boolean, A, PB extends boolean, B>(
+  left: Validator<PA, A>,
+  right: Validator<PB, B>
+): Validator<PA | PB, A | B> {
   return new XOrValidator(left, right);
 }
