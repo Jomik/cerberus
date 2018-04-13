@@ -1,80 +1,120 @@
-import { TypeValidator, typeValidator } from "./validator";
-import { valid, Result, invalid } from "./result";
+import { Validator } from "./validator";
+import { Result, invalid, valid } from "./result";
+import { orError, error } from "./errors";
 import { Id } from "./types";
-import { error, orError } from ".";
 
-export function is<A>(a: A): TypeValidator<A> {
-  return typeValidator(
-    (o) => (o === a ? valid(o) : invalid(error(`must be ${a}`)))
-  );
+// export function is<A>(a: A): TypeValidator<A> {
+//   return typeValidator(
+//     (o) => (o === a ? valid(o) : invalid(error(`must be ${a}`)))
+//   );
+// }
+
+// export function oneOf<A, B, C>(...args: [A, B, C][]): TypeValidator<B, C]>;
+// export function oneOf<A, B>(...args: [A, B][]): TypeValidator<B]>;
+// export function oneOf<A extends string>(...args: A[]): TypeValidator<A>;
+// export function oneOf<A extends number>(...args: A[]): TypeValidator<A>;
+// export function oneOf<A>(...args: A[]): TypeValidator<A>;
+// export function oneOf<A>(...args: A[]): TypeValidator<A> {
+//   return typeValidator(
+//     (o) =>
+//       args.includes(o)
+//         ? valid(o)
+//         : invalid(error(`must be one of ${args.join(", ")}`))
+//   );
+// }
+
+export class AndValidator<A, PB, B> extends Validator<Id<A & B>> {
+  constructor(private left: Validator<A>, private right: Validator<B>) {
+    super();
+  }
+
+  validate(value: any) {
+    return <Result<Id<A & B>>>this.left
+      .validate(value)
+      .chain(() => this.right.validate(value));
+  }
 }
 
-export function oneOf<A, B, C>(...args: [A, B, C][]): TypeValidator<[A, B, C]>;
-export function oneOf<A, B>(...args: [A, B][]): TypeValidator<[A, B]>;
-export function oneOf<A extends string>(...args: A[]): TypeValidator<A>;
-export function oneOf<A extends number>(...args: A[]): TypeValidator<A>;
-export function oneOf<A>(...args: A[]): TypeValidator<A>;
-export function oneOf<A>(...args: A[]): TypeValidator<A> {
-  return typeValidator(
-    (o) =>
-      args.includes(o)
-        ? valid(o)
-        : invalid(error(`must be one of ${args.join(", ")}`))
-  );
+export function and<PA, A, PB, B>(
+  left: Validator<A>,
+  right: Validator<B>
+): Validator<Id<A & B>> {
+  return new AndValidator(left, right);
 }
 
-export function or<A, B>(
-  left: TypeValidator<A>,
-  right: TypeValidator<B>
-): TypeValidator<A | B> {
-  return typeValidator((o) =>
-    left.validate(o).match<Result<A | B>>({
+export class OrValidator<A, PB, B> extends Validator<A | B> {
+  constructor(private left: Validator<A>, private right: Validator<B>) {
+    super();
+  }
+
+  validate(value: any) {
+    return this.left.validate(value).match({
       valid: (a) => valid(a),
       invalid: (l) =>
-        right.validate(o).match<Result<A | B>>({
+        this.right.validate(value).match({
           valid: (b) => valid(b),
-          invalid: (r) => invalid(orError(l, r))
+          invalid: (r) => invalid<A | B>(orError(l, r))
         })
-    })
-  );
+    });
+  }
+
+  async asyncValidate(value: any) {
+    const lr = await this.left.asyncValidate(value);
+    return lr.match({
+      valid: async () => lr,
+      invalid: async (le) => {
+        const rr = await this.right.asyncValidate(value);
+        return rr.match({
+          valid: () => rr,
+          invalid: (re) => invalid<A | B>(orError(le, re))
+        });
+      }
+    });
+  }
+}
+export function or<PA, A, PB, B>(
+  left: Validator<A>,
+  right: Validator<B>
+): Validator<A | B> {
+  return new OrValidator(left, right);
 }
 
-export function and<A extends object, B extends object>(
-  left: TypeValidator<A>,
-  right: TypeValidator<B>
-): TypeValidator<Id<A & B>>;
-export function and<A, B>(
-  left: TypeValidator<A>,
-  right: TypeValidator<B>
-): TypeValidator<Id<A & B>>;
-export function and<A, B>(
-  left: TypeValidator<A>,
-  right: TypeValidator<B>
-): TypeValidator<Id<A & B>> {
-  return typeValidator((o: any) =>
-    left.validate(o).chain((a) => right.validate.bind(right)(o))
-  );
-}
+export class XOrValidator<A, PB, B> extends Validator<A | B> {
+  constructor(private left: Validator<A>, private right: Validator<B>) {
+    super();
+  }
 
-export function xor<A, B>(
-  left: TypeValidator<A>,
-  right: TypeValidator<B>
-): TypeValidator<A> | TypeValidator<B> {
-  return typeValidator((o: any) => {
-    const lr = left.validate(o);
-    const lRes = lr.result;
-    const rr = right.validate(o);
-    const rRes = rr.result;
-
-    if (lRes.valid) {
-      if (!rRes.valid) {
+  validate(value: any) {
+    const lr = this.left.validate(value);
+    const rr = this.right.validate(value);
+    if (lr.result.valid) {
+      if (!rr.result.valid) {
         return lr;
       }
-    } else if (rRes.valid) {
+      return invalid<A | B>(error("must not satisfy both conditions"));
+    } else if (rr.result.valid) {
       return rr;
-    } else {
-      return invalid(orError(lRes.error, rRes.error));
     }
-    return invalid(error("must not satisfy both conditions"));
-  });
+    return invalid<A | B>(orError(lr.result.error, rr.result.error));
+  }
+
+  async asyncValidate(value: any) {
+    const lr = await this.left.asyncValidate(value);
+    return lr.match({
+      valid: async () => lr,
+      invalid: async (le) => {
+        const rr = await this.right.asyncValidate(value);
+        return rr.match({
+          valid: () => rr,
+          invalid: (re) => invalid<A | B>(orError(le, re))
+        });
+      }
+    });
+  }
+}
+export function xor<PA, A, PB, B>(
+  left: Validator<A>,
+  right: Validator<B>
+): Validator<A | B> {
+  return new XOrValidator(left, right);
 }

@@ -12,7 +12,7 @@ export abstract class Result<A> {
 
   abstract match<K>(m: ResultMatch<A, K>): K;
 
-  chain<B>(f: (object: A) => Result<B>): Result<B> {
+  chain<B>(f: (object: A) => B): B {
     return this.match({
       valid: (o) => f(o),
       invalid: () => <any>this
@@ -44,10 +44,10 @@ export class InvalidResult extends Result<any> {
   }
 }
 
-export function valid<A>(object: A) {
+export function valid<A>(object: A): Result<A> {
   return new ValidResult(object);
 }
 
-export function invalid(error: ValidationError) {
+export function invalid<A>(error: ValidationError): Result<A> {
   return new InvalidResult(error);
 }

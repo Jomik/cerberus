@@ -1,1 +1,1 @@
-export type Id<T> = { [K in keyof T]: T[K] };
+export type Id<T> = T extends object ? { [K in keyof T]: T[K] } : T;
