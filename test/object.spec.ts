@@ -27,7 +27,7 @@ describe("object", () => {
   it("lazy properties", () => {
     const schema = object({
       c: number,
-      b: ({ a, c }: { a: number; c: number }) => number.gt(a - c),
+      b: ({ a, c }: { a: number; c: number }) => number.greater(a - c),
       a: number
     });
     expect(schema.validate({ a: 20, b: 42, c: 0 }).result.valid, "accept lazy")
@@ -41,7 +41,7 @@ describe("object", () => {
     expect(schema.validate({ a: 42 }), "reject rest").to.not.be.valid;
     const lazySchema = object(
       { a: number },
-      { rest: ({ a }: { a: number }) => number.gt(a) }
+      { rest: ({ a }: { a: number }) => number.greater(a) }
     );
     expect(lazySchema.validate({ a: 42, b: 43 }), "accept lazy rest").to.be
       .valid;

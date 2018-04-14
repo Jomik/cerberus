@@ -48,6 +48,6 @@ export function valid<A>(object: A): Result<A> {
   return new ValidResult(object);
 }
 
-export function invalid<A>(error: ValidationError): Result<A> {
+export function invalid<A = any>(error: ValidationError): Result<A> {
   return new InvalidResult(error);
 }
