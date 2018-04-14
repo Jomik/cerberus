@@ -42,7 +42,20 @@ export abstract class Validator<PA extends boolean, A> {
     return new ChainValidator(this, other);
   }
 
-  optional(): Validator<P, A | undefined> {
+  map<B>(this: Validator<any, any>, f: (value: A) => B): Validator<PA, B>;
+  map<B>(f: (value: A) => B): Validator<any, B> {
+    return this.chain(new MapValidator(f));
+  }
+
+  mapAsync<B>(
+    this: Validator<any, any>,
+    f: (value: A) => Promise<B>
+  ): Validator<true, B>;
+  mapAsync<B>(f: (value: A) => Promise<B>): Validator<any, B> {
+    return this.chain(new MapAsyncValidator(f));
+  }
+
+  optional(): Validator<PA, A | undefined> {
     return new OptionalValidator(this);
   }
 
@@ -91,6 +104,30 @@ export class ChainValidator<
     return (<any>this.first)
       .asyncValidate(value)
       .then((res) => res.chain(this.second.asyncValidate));
+  }
+}
+
+export class MapValidator<PA extends boolean, A, B> extends Validator<PA, B> {
+  constructor(private f: (value: A) => B) {
+    super();
+  }
+
+  validate(value: any): Result<B> {
+    return valid(this.f(value));
+  }
+}
+
+export class MapAsyncValidator<A, B> extends Validator<true, B> {
+  constructor(private f: (value: A) => Promise<B>) {
+    super();
+  }
+
+  validate(value: any): never {
+    throw new Error("trying to synchronously validate an asynchron validator");
+  }
+
+  async asyncValidate(value: any) {
+    return valid(await this.f(value));
   }
 }
 
