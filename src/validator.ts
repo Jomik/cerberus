@@ -2,19 +2,13 @@ import { Result, valid } from "./result";
 import { error, propertyError } from "./errors";
 import { integer } from "./initializers";
 import { and, or, xor } from "./functions";
-import { Id } from "./types";
+import { Id, IsAsync } from "./types";
 
-export abstract class Validator<P extends boolean, A> {
-  // Needed to make TypeScript care about the type of P.
-  private p: P;
+export abstract class Validator<PA extends boolean, A> {
+  // Needed to make TypeScript care about the type of PA.
+  private p: PA;
 
   abstract validate(this: Validator<false, any>, value: any): Result<A>;
-  async asyncValidate(
-    this: Validator<true, any>,
-    value: any
-  ): Promise<Result<A>> {
-    return Promise.resolve((<any>this).validate(value));
-  }
 
   test(this: Validator<false, any>, value: any): A {
     return this.validate(value).match({
@@ -23,6 +17,13 @@ export abstract class Validator<P extends boolean, A> {
         throw err;
       }
     });
+  }
+
+  async asyncValidate(
+    this: Validator<true, any>,
+    value: any
+  ): Promise<Result<A>> {
+    return Promise.resolve((<any>this).validate(value));
   }
 
   async asyncTest(this: Validator<true, any>, value: any): Promise<A> {
@@ -35,7 +36,9 @@ export abstract class Validator<P extends boolean, A> {
     });
   }
 
-  chain<PB extends boolean, B>(other: Validator<PB, B>): Validator<P | PB, B> {
+  chain<PB extends boolean, B>(
+    other: Validator<PB, B>
+  ): Validator<IsAsync<PA | PB>, B> {
     return new ChainValidator(this, other);
   }
 
@@ -45,21 +48,24 @@ export abstract class Validator<P extends boolean, A> {
 
   and<PB extends boolean, B>(
     right: Validator<PB, B>
-  ): Validator<P | PB, Id<A & B>> {
+  ): Validator<IsAsync<PA | PB>, A & B> {
     return and(this, right);
   }
 
-  or<PB extends boolean, B>(right: Validator<PB, B>): Validator<P | PB, A | B> {
+  or<PB extends boolean, B>(
+    right: Validator<PB, B>
+  ): Validator<IsAsync<PA | PB>, A | B> {
     return or(this, right);
   }
 
   xor<PB extends boolean, B>(
     right: Validator<PB, B>
-  ): Validator<P | PB, A | B> {
+  ): Validator<IsAsync<PA | PB>, A | B> {
     return xor(this, right);
   }
 
-  integer(this: Validator<P, number>) {
+  integer(this: Validator<any, number>): Validator<PA, number>;
+  integer(): Validator<any, number> {
     return this.chain(integer);
   }
 }
@@ -69,7 +75,7 @@ export class ChainValidator<
   A,
   PB extends boolean,
   B
-> extends Validator<PA | PB, B> {
+> extends Validator<IsAsync<PA | PB>, B> {
   constructor(
     private first: Validator<PA, A>,
     private second: Validator<PB, B>

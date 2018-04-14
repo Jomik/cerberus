@@ -28,21 +28,18 @@ export class AndValidator<
   A,
   PB extends boolean,
   B
-> extends Validator<PA | PB, Id<A & B>> {
+> extends Validator<IsAsync<PA | PB>, A & B> {
   constructor(private left: Validator<PA, A>, private right: Validator<PB, B>) {
     super();
   }
 
-  validate(
-    this: AndValidator<false, A, false, B>,
-    value: any
-  ): Result<Id<A & B>> {
-    return <Result<Id<A & B>>>this.left
+  validate(value: any): Result<A & B> {
+    return <Result<A & B>>(<any>this.left)
       .validate(value)
-      .chain(() => this.right.validate(value));
+      .chain(() => (<any>this.right).validate(value));
   }
 
-  async asyncValidate(value: any) {
+  async asyncValidate(value: any): Promise<Result<A & B>> {
     return (<any>this.left)
       .asyncValidate(value)
       .then((res) => (<any>this.right).asyncValidate(value));
@@ -52,7 +49,7 @@ export class AndValidator<
 export function and<PA extends boolean, A, PB extends boolean, B>(
   left: Validator<PA, A>,
   right: Validator<PB, B>
-): Validator<PA | PB, Id<A & B>> {
+): Validator<IsAsync<PA | PB>, A & B> {
   return new AndValidator(left, right);
 }
 
@@ -61,7 +58,7 @@ export class OrValidator<
   A,
   PB extends boolean,
   B
-> extends Validator<PA | PB, A | B> {
+> extends Validator<IsAsync<PA | PB>, A | B> {
   constructor(private left: Validator<PA, A>, private right: Validator<PB, B>) {
     super();
   }
@@ -94,7 +91,7 @@ export class OrValidator<
 export function or<PA extends boolean, A, PB extends boolean, B>(
   left: Validator<PA, A>,
   right: Validator<PB, B>
-): Validator<PA | PB, A | B> {
+): Validator<IsAsync<PA | PB>, A | B> {
   return new OrValidator(left, right);
 }
 
@@ -103,7 +100,7 @@ export class XOrValidator<
   A,
   PB extends boolean,
   B
-> extends Validator<PA | PB, A | B> {
+> extends Validator<IsAsync<PA | PB>, A | B> {
   constructor(private left: Validator<PA, A>, private right: Validator<PB, B>) {
     super();
   }
@@ -139,6 +136,6 @@ export class XOrValidator<
 export function xor<PA extends boolean, A, PB extends boolean, B>(
   left: Validator<PA, A>,
   right: Validator<PB, B>
-): Validator<PA | PB, A | B> {
+): Validator<IsAsync<PA | PB>, A | B> {
   return new XOrValidator(left, right);
 }
