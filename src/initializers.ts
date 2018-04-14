@@ -85,46 +85,35 @@ export class ArrayValidator<P extends boolean, A> extends Validator<P, A[]> {
     super();
   }
 
-  validate(this: ArrayValidator<false, A>, value: any) {
+  private logic(results: Result<A>[]) {
+    let errors: [number, ValidationError][] = [];
+    const values = results.map((r, i) =>
+      r.match({
+        valid: (v) => v,
+        invalid: (e) => {
+          errors.push([i, e]);
+          return <A>(undefined as any);
+        }
+      })
+    );
+    return errors.length === 0
+      ? valid(values)
+      : invalid<A[]>(arrayError(errors));
+  }
+
+  validate(this: ArrayValidator<false, any>, value: any) {
     if (Array.isArray(value)) {
-      let errored = false;
-      let err: [number, ValidationError][] = [];
-      const res = value.map((entry, i) =>
-        this.validator.validate(entry).match({
-          valid: (a) => a,
-          invalid: (e) => {
-            err.push([i, e]);
-            errored = true;
-            // Continue so we can get errors for all entries.
-            return <A>(undefined as any);
-          }
-        })
-      );
-      return !errored ? valid(res) : invalid<A[]>(arrayError(err));
+      return this.logic(value.map(this.validator.validate));
     }
     return invalid<A[]>(typeError("must be an array"));
   }
 
-  async asyncValidate(this: ArrayValidator<true, A>, value: any) {
+  async asyncValidate(this: ArrayValidator<true, any>, value: any) {
     if (Array.isArray(value)) {
-      let errored = false;
-      let err: [number, ValidationError][] = [];
       const results = await Promise.all(
-        value.map((entry, i) =>
-          this.validator.asyncValidate(entry).then((res) =>
-            res.match({
-              valid: (a) => a,
-              invalid: (e) => {
-                err.push([i, e]);
-                errored = true;
-                // Continue so we can get errors for all entries.
-                return <A>(undefined as any);
-              }
-            })
-          )
-        )
+        value.map(this.validator.asyncValidate)
       );
-      return !errored ? valid(results) : invalid<A[]>(arrayError(err));
+      return this.logic(results);
     }
     return invalid<A[]>(typeError("must be an array"));
   }
@@ -135,128 +124,213 @@ export function array<P extends boolean, A>(
   return new ArrayValidator(validator);
 }
 
-// export type SchemaEntry<A extends object, B> =
-//   | Validator<B>
-//   | ((obj: A) => Validator<B>);
-// export type Schema<A extends object> = { [K in keyof A]: SchemaEntry<A, A[K]> };
+export type SchemaEntry<P extends boolean, A extends object, B> =
+  | Validator<P, B>
+  | ((obj: A) => Validator<P, B>);
+export type Schema<P extends boolean, A extends object> = {
+  [K in keyof A]: SchemaEntry<P, A, A[K]>
+};
 
-// export class ObjectValidator<
-//   P,
-//   A extends object,
-//   B
-// > extends Validator<A> {
-//   private schemaEntries: [keyof A, SchemaEntry<A, A[keyof A]>, number][];
-//   private options: { rest?: SchemaEntry<A, B>; strict?: boolean };
-//   constructor(
-//     private schema: Schema<A>,
-//     options: { rest: SchemaEntry<A, B> } | { strict: boolean } = {
-//       strict: false
-//     }
-//   ) {
-//     super();
-//     this.options = options;
-//     this.schemaEntries = <any>Object.entries(schema);
-//     this.schemaEntries.reduce((acc, arr) => arr.push(++acc), -1);
-//     this.schemaEntries.sort((a, b) => {
-//       const aFunc = typeof a[1] === "function";
-//       const bFunc = typeof b[1] === "function";
-//       if ((aFunc && bFunc) || (!aFunc && !bFunc)) {
-//         return a[2] - b[2];
-//       } else if (aFunc && !bFunc) {
-//         return 1;
-//       } else {
-//         return -1;
-//       }
-//     });
-//   }
+export class ObjectValidator<
+  P extends boolean,
+  A extends object,
+  B = never
+> extends Validator<P, Id<A & { [index: string]: B }>> {
+  private schemaEntries: [keyof A, Validator<P, A[keyof A]>][];
+  private schemaEntriesFunc: [keyof A, (obj: A) => Validator<P, A[keyof A]>][];
+  private options: { rest?: SchemaEntry<P, A, B>; strict?: boolean };
+  constructor(
+    private schema: Schema<P, A>,
+    options: { rest: SchemaEntry<P, A, B> } | { strict: boolean } = {
+      strict: false
+    }
+  ) {
+    super();
+    this.options = options;
 
-//   validate(value: any) {
-//     if (typeof value === "object" && !Array.isArray(value)) {
-//       const keys = new Set(Object.keys(value));
-//       let obj: A & { [index: string]: B } = <any>{};
-//       let err: [string, ValidationError][] = [];
-//       let errored = false;
+    const entries = Object.entries<SchemaEntry<P, A, A>>(<any>schema);
+    this.schemaEntries = <any>entries.filter(
+      ([k, v]) => typeof v !== "function"
+    );
+    this.schemaEntriesFunc = <any>entries.filter(
+      ([k, v]) => typeof v === "function"
+    );
+  }
 
-//       for (const [k, v] of this.schemaEntries) {
-//         if (typeof v !== "function") {
-//           v.validate(value[k]).match({
-//             valid: (val) => {
-//               obj[k] = val;
-//             },
-//             invalid: (e) => {
-//               err.push([k, e]);
-//               errored = true;
-//             }
-//           });
-//         } else if (!errored) {
-//           v(obj)
-//             .validate(value[k])
-//             .match({
-//               valid: (val) => {
-//                 obj[k] = val;
-//               },
-//               invalid: (e) => {
-//                 err.push([k, e]);
-//                 errored = true;
-//               }
-//             });
-//         } else {
-//           return invalid<A>(objectError(err));
-//         }
-//         keys.delete(k);
-//       }
+  async asyncValidate(
+    this: ObjectValidator<true, any, any>,
+    value: any
+  ): Promise<Result<Id<A & { [index: string]: B }>>> {
+    if (typeof value === "object" && !Array.isArray(value)) {
+      let obj: A & { [index: string]: B } = <any>{};
+      let errors: [string, ValidationError][] = [];
+      const keys = new Set(Object.keys(value));
 
-//       if (errored) {
-//         return invalid<A>(objectError(err));
-//       }
+      const basicResults = await Promise.all(
+        this.schemaEntries.map(
+          async ([k, v]) =>
+            <[keyof A, Result<A[keyof A]>]>[k, await v.asyncValidate(value[k])]
+        )
+      );
+      for (const [k, res] of basicResults) {
+        res.match<void>({
+          valid: (v) => (obj[k] = v),
+          invalid: (e) => errors.push([k, e])
+        });
+        keys.delete(k);
+      }
 
-//       if (this.options.rest !== undefined) {
-//         const v =
-//           typeof this.options.rest === "function"
-//             ? this.options.rest(obj)
-//             : this.options.rest;
-//         for (const k of keys) {
-//           v.validate(value[k]).match({
-//             valid: (val) => {
-//               obj[k] = val;
-//             },
-//             invalid: (e) => {
-//               err.push([k, e]);
-//               errored = true;
-//             }
-//           });
-//         }
-//       } else if (this.options.strict) {
-//         if (keys.size > 0) {
-//           return invalid<A>(
-//             error(`unknown key(s): ${Array.from(keys).join(", ")}`)
-//           );
-//         }
-//       } else {
-//         for (const k of keys) {
-//           obj[k] = value[k];
-//         }
-//       }
+      if (errors.length > 0) {
+        return invalid(objectError(errors));
+      }
 
-//       return !errored ? valid(obj) : invalid<A>(objectError(err));
-//     }
-//     return invalid<A>(typeError("must be an object"));
-//   }
-// }
+      for (const [k, vali] of this.schemaEntriesFunc) {
+        const res = await vali(obj).asyncValidate(value[k]);
+        const err = res.match<ValidationError | undefined>({
+          valid: (v) => (obj[k] = v),
+          invalid: (e) => e
+        });
+        if (err !== undefined) {
+          return invalid(objectError(<any>[k, err]));
+        }
+        keys.delete(k);
+      }
 
-// export function object<A extends object, B>(
-//   schema: Schema<A>,
-//   options: { rest: SchemaEntry<A, B> }
-// ): Validator<Id<A & { [index: string]: B }>>;
-// export function object<A extends object, B>(
-//   schema: Schema<A>,
-//   options: { strict: boolean }
-// ): Validator<A>;
-// export function object<A extends object, B>(schema: Schema<A>): Validator<A>;
+      if (this.options.rest !== undefined) {
+        const vali =
+          typeof this.options.rest === "function"
+            ? this.options.rest(obj)
+            : this.options.rest;
+        const restResults = await Promise.all(
+          Array.from(keys).map(
+            async (k) =>
+              <[string, Result<B>]>[k, await vali.asyncValidate(value[k])]
+          )
+        );
+        for (const [k, res] of restResults) {
+          res.match<void>({
+            valid: (v) => (obj[k] = v),
+            invalid: (e) => errors.push([k, e])
+          });
+        }
 
-// export function object<A extends object, B>(
-//   schema: Schema<A>,
-//   options?: { rest: SchemaEntry<A, B> } | { strict: boolean }
-// ): Validator<A> {
-//   return new ObjectValidator(schema, options);
-// }
+        if (errors.length > 0) {
+          return invalid(objectError(errors));
+        }
+      } else if (this.options.strict) {
+        if (keys.size > 0) {
+          return invalid<any>(
+            error(`unknown key(s): ${Array.from(keys).join(", ")}`)
+          );
+        }
+      } else {
+        for (const k of keys) {
+          obj[k] = value[k];
+        }
+      }
+      return valid(<Id<A & { [index: string]: B }>>obj);
+    }
+    return invalid(typeError("must be an object"));
+  }
+
+  validate(
+    this: ObjectValidator<false, any, any>,
+    value: any
+  ): Result<Id<A & { [index: string]: B }>> {
+    if (typeof value === "object" && !Array.isArray(value)) {
+      let obj: A & { [index: string]: B } = <any>{};
+      let errors: [string, ValidationError][] = [];
+      const keys = new Set(Object.keys(value));
+
+      const basicResults = this.schemaEntries.map(
+        ([k, v]) => <[keyof A, Result<A[keyof A]>]>[k, v.validate(value[k])]
+      );
+      for (const [k, res] of basicResults) {
+        res.match<void>({
+          valid: (v) => (obj[k] = v),
+          invalid: (e) => errors.push([k, e])
+        });
+        keys.delete(k);
+      }
+
+      if (errors.length > 0) {
+        return invalid(objectError(errors));
+      }
+
+      for (const [k, vali] of this.schemaEntriesFunc) {
+        const res = vali(obj).validate(value[k]);
+        const err = res.match<ValidationError | undefined>({
+          valid: (v) => (obj[k] = v),
+          invalid: (e) => e
+        });
+        if (err !== undefined) {
+          return invalid(objectError(<any>[k, err]));
+        }
+        keys.delete(k);
+      }
+
+      if (this.options.rest !== undefined) {
+        const vali =
+          typeof this.options.rest === "function"
+            ? this.options.rest(obj)
+            : this.options.rest;
+        const restResults = Array.from(keys).map(
+          (k) => <[string, Result<B>]>[k, vali.validate(value[k])]
+        );
+        for (const [k, res] of restResults) {
+          res.match<void>({
+            valid: (v) => (obj[k] = v),
+            invalid: (e) => errors.push([k, e])
+          });
+        }
+
+        if (errors.length > 0) {
+          return invalid(objectError(errors));
+        }
+      } else if (this.options.strict) {
+        if (keys.size > 0) {
+          return invalid<any>(
+            error(`unknown key(s): ${Array.from(keys).join(", ")}`)
+          );
+        }
+      } else {
+        for (const k of keys) {
+          obj[k] = value[k];
+        }
+      }
+      return valid(<Id<A & { [index: string]: B }>>obj);
+    }
+    return invalid(typeError("must be an object"));
+  }
+}
+
+export function object<A extends object, B>(
+  schema: Schema<false, A>,
+  options: { rest: SchemaEntry<false, A, B> }
+): Validator<false, Id<A & { [index: string]: B }>>;
+export function object<A extends object>(
+  schema: Schema<false, A>,
+  options: { strict: boolean }
+): Validator<false, A>;
+export function object<A extends object>(
+  schema: Schema<false, A>
+): Validator<false, A>;
+
+export function object<A extends object, B>(
+  schema: Schema<boolean, A>,
+  options: { rest: SchemaEntry<boolean, A, B> }
+): Validator<true, Id<A & { [index: string]: B }>>;
+export function object<A extends object>(
+  schema: Schema<boolean, A>,
+  options: { strict: boolean }
+): Validator<true, A>;
+export function object<A extends object>(
+  schema: Schema<boolean, A>
+): Validator<true, A>;
+
+export function object<P extends boolean, A extends object, B = never>(
+  schema: Schema<P, A>,
+  options?: { rest: SchemaEntry<P, A, B> } | { strict: boolean }
+): Validator<boolean, Id<A & { [index: string]: B }>> {
+  return new ObjectValidator(schema, options);
+}
