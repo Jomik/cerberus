@@ -169,32 +169,32 @@ describe("and", () => {
   });
 });
 
-// describe("property", () => {
-//   describe("length", () => {
-//     it("string", () => {
-//       const schema = string.length((len) => len.gt(3));
-//       expect(schema.validate("foobar")).to.be.valid.and.have.result("foobar");
-//       expect(schema.validate("foo")).to.not.be.valid;
-//     });
-//     it("array", () => {
-//       const arraySchema = array(string).length((len) => len.gt(3));
-//       expect(arraySchema.validate(["a", "b", "c", "d"])).to.be.valid;
-//       expect(arraySchema.validate(["foobar"])).to.not.be.valid;
-//     });
-//   });
-// });
+describe("property", () => {
+  describe("length", () => {
+    it("string", () => {
+      const schema = string.length((len) => len.greater(3));
+      expect(schema.validate("foobar")).to.be.valid.and.have.result("foobar");
+      expect(schema.validate("foo")).to.not.be.valid;
+    });
+    it("array", () => {
+      const arraySchema = array(string).length((len) => len.greater(3));
+      expect(arraySchema.validate(["a", "b", "c", "d"])).to.be.valid;
+      expect(arraySchema.validate(["foobar"])).to.not.be.valid;
+    });
+  });
+});
 
-// describe("method", () => {
-//   describe("includes", () => {
-//     it("string", () => {
-//       const schema = string.includes("foo");
-//       expect(schema.validate("foobar")).to.be.valid;
-//       expect(schema.validate("bar")).to.not.be.valid;
-//     });
-//     it("array", () => {
-//       const schema = array(number).includes(42);
-//       expect(schema.validate([1, 2, 42, 3])).to.be.valid;
-//       expect(schema.validate([1, 2, 3])).to.not.be.valid;
-//     });
-//   });
-// });
+describe("method", () => {
+  describe("includes", () => {
+    it("string", () => {
+      const schema = string.includes("foo");
+      expect(schema.validate("foobar")).to.be.valid;
+      expect(schema.validate("bar")).to.not.be.valid;
+    });
+    it("array", () => {
+      const schema = array(number).includes(42);
+      expect(schema.validate([1, 2, 42, 3])).to.be.valid;
+      expect(schema.validate([1, 2, 3])).to.not.be.valid;
+    });
+  });
+});

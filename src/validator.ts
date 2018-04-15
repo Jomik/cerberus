@@ -96,6 +96,37 @@ export abstract class Validator<PA extends boolean, A> {
     return this.chain(not(value));
   }
 
+  length<P extends boolean>(
+    this: Validator<any, string>,
+    validator: (v: Validator<false, number>) => Validator<P, any>
+  ): Validator<IsAsync<PA | P>, A>;
+  length<P extends boolean>(
+    this: Validator<any, any[]>,
+    validator: (v: Validator<false, number>) => Validator<P, any>
+  ): Validator<IsAsync<PA | P>, A>;
+  length<P extends boolean>(
+    validator: (v: Validator<false, number>) => Validator<P, any>
+  ): Validator<boolean, A> {
+    return this.chain(new PropertyValidator("length", validator));
+  }
+
+  includes<P extends boolean>(
+    this: Validator<any, string>,
+    value: A
+  ): Validator<PA, A>;
+  includes<P extends boolean>(
+    this: Validator<any, any[]>,
+    value: A extends Array<infer B> ? B : never
+  ): Validator<PA, A>;
+  includes<P extends boolean>(value: any): Validator<any, A> {
+    return this.chain(
+      predicate<any>(
+        (v) => v.includes(value),
+        validationError(`must include ${value}`)
+      )
+    );
+  }
+
   greater(this: Validator<any, number>, value: number): Validator<PA, number>;
   greater(this: Validator<any, Date>, value: Date): Validator<PA, Date>;
   greater(value: any): Validator<any, any> {
@@ -686,6 +717,36 @@ class OptionalValidator<P extends boolean, A> extends DefaultValidator<
 > {
   constructor(validator: Validator<P, A>) {
     super(validator, undefined);
+  }
+}
+
+class PropertyValidator<
+  PA extends boolean,
+  A,
+  T extends keyof A
+> extends Validator<PA, A> {
+  private validator: Validator<PA, any>;
+  constructor(
+    private prop: T,
+    validator: (v: Validator<false, A[T]>) => Validator<PA, any>
+  ) {
+    super();
+    this.validator = validator(any);
+  }
+
+  validate(this: PropertyValidator<false, any, any>, value: A) {
+    return this.validator.validate(value[this.prop]).match({
+      valid: () => valid(value),
+      invalid: (e) => invalid(propertyError(this.prop, e))
+    });
+  }
+
+  async asyncValidate(this: PropertyValidator<true, any, any>, value: any) {
+    const result = await this.validator.asyncValidate(value[this.prop]);
+    return result.match({
+      valid: () => valid(value),
+      invalid: (e) => invalid(propertyError(this.prop, e))
+    });
   }
 }
 
