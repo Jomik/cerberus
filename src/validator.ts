@@ -13,7 +13,7 @@ import { Id, IsAsync } from "./types";
 
 export abstract class Validator<PA extends boolean, A> {
   // Needed to make TypeScript care about the type of PA.
-  private p: PA;
+  private __PA: PA;
 
   abstract validate(this: Validator<false, any>, value: any): Result<A>;
 
@@ -350,70 +350,60 @@ export function mapAsync<A, B>(
   return new MapAsyncValidator(validator, f);
 }
 
+class PredicateValidator<A> extends Validator<false, A> {
+  constructor(
+    private pred: (value: A) => boolean,
+    private error: ValidationError
+  ) {
+    super();
+  }
+
+  validate(value: A): Result<A> {
+    return this.pred(value) ? valid(value) : invalid(this.error);
+  }
+}
+function predicate<A>(
+  pred: (value: A) => boolean,
+  error: ValidationError
+): Validator<false, A> {
+  return new PredicateValidator(pred, error);
+}
+
 // Initializers
+export const number = predicate<number>(
+  (v) => typeof v === "number",
+  typeError("must be a number")
+);
 
-class NumberValidator extends Validator<false, number> {
-  validate(value: any) {
-    return typeof value === "number"
-      ? valid(value)
-      : invalid<number>(typeError("must be a number"));
-  }
-}
-export const number: Validator<false, number> = new NumberValidator();
+export const integer = predicate<number>(
+  (v) => Number.isInteger(v),
+  typeError("must be an integer")
+);
 
-class IntegerValidator extends Validator<false, number> {
-  validate(value: number) {
-    return Number.isInteger(value)
-      ? valid(value)
-      : invalid<number>(validationError("must be an integer"));
-  }
-}
-export const integer: Validator<false, number> = new IntegerValidator();
+export const string = predicate<string>(
+  (v) => typeof v === "string",
+  typeError("must be a string")
+);
 
-class StringValidator extends Validator<false, string> {
-  validate(value: any) {
-    return typeof value === "string"
-      ? valid(value)
-      : invalid<string>(typeError("must be a string"));
-  }
-}
-export const string: Validator<false, string> = new StringValidator();
+export const boolean = predicate<boolean>(
+  (v) => typeof v === "boolean",
+  typeError("must be a boolean")
+);
 
-class BooleanValidator extends Validator<false, boolean> {
-  validate(value: any) {
-    return typeof value === "boolean"
-      ? valid(value)
-      : invalid<boolean>(typeError("must be a boolean"));
-  }
-}
-export const boolean: Validator<false, boolean> = new BooleanValidator();
+export const required = predicate<any>(
+  (v) => v !== undefined && v !== null,
+  validationError("must be defined")
+);
 
-class DefinedValidator extends Validator<false, any> {
-  validate(value: any) {
-    return value !== undefined && value !== null
-      ? valid(value)
-      : invalid(typeError("must be defined"));
-  }
-}
-export const required: Validator<false, any> = new DefinedValidator();
+export const forbidden = predicate<undefined>(
+  (v) => v === undefined,
+  validationError("must be undefined")
+);
 
-class UndefinedValidator extends Validator<false, undefined> {
-  validate(value: any) {
-    return value === undefined
-      ? valid(undefined)
-      : invalid<undefined>(typeError("must be undefined"));
-  }
-}
-export const forbidden: Validator<false, undefined> = new UndefinedValidator();
-
-class NullValidator extends Validator<false, null> {
-  validate(value: any) {
-    return value === null
-      ? valid(null)
-      : invalid<null>(typeError("must be null"));
-  }
-}
-export const nil: Validator<false, null> = new NullValidator();
+export const nil = predicate<null>(
+  (v) => v === null,
+  typeError("must be null")
+);
 
 class AnyValidator extends Validator<false, any> {
   validate(value: any) {
@@ -703,110 +693,50 @@ class OptionalValidator<P extends boolean, A> extends DefaultValidator<
 
 // Operators
 
-class IdentityValidator<A> extends Validator<false, A> {
-  constructor(private value: A) {
-    super();
-  }
-
-  validate(value: any): Result<A> {
-    return value === this.value
-      ? valid<A>(value)
-      : invalid(validationError(`must be ${this.value}`));
-  }
-}
-export function is<A>(value: A): Validator<false, A> {
-  return new IdentityValidator(value);
+export function is<A>(value: A) {
+  return predicate<A>((v) => v === value, validationError(`must be ${value}`));
 }
 
-class NonIdentityValidator<A> extends Validator<false, A> {
-  constructor(private value: A) {
-    super();
-  }
-
-  validate(value: any): Result<A> {
-    return value !== this.value
-      ? valid<A>(value)
-      : invalid(validationError(`must not be ${this.value}`));
-  }
-}
-function not<A>(value: A): Validator<false, A> {
-  return new NonIdentityValidator(value);
+function not<A>(value: A) {
+  return predicate<A>(
+    (v) => v !== value,
+    validationError(`must not be ${value}`)
+  );
 }
 
-class GreaterValidator<A> extends Validator<false, A> {
-  constructor(private value: A) {
-    super();
-  }
-
-  validate(value: A): Result<A> {
-    return value > this.value
-      ? valid<A>(value)
-      : invalid(validationError(`must be greater than ${this.value}`));
-  }
-}
-function greater<A>(value: A): Validator<false, A> {
-  return new GreaterValidator(value);
+function greater<A>(value: A) {
+  return predicate<A>(
+    (v) => v > value,
+    validationError(`must be greater than ${value}`)
+  );
 }
 
-class GreaterEqualValidator<A> extends Validator<false, A> {
-  constructor(private value: A) {
-    super();
-  }
-
-  validate(value: A): Result<A> {
-    return value >= this.value
-      ? valid<A>(value)
-      : invalid(
-          validationError(`must be greater than or equal to ${this.value}`)
-        );
-  }
-}
-function greaterEqual<A>(value: A): Validator<false, A> {
-  return new GreaterEqualValidator(value);
+function greaterEqual<A>(value: A) {
+  return predicate<A>(
+    (v) => v >= value,
+    validationError(`must be greater than or equal to ${value}`)
+  );
 }
 
-class LessValidator<A> extends Validator<false, A> {
-  constructor(private value: A) {
-    super();
-  }
-
-  validate(value: A): Result<A> {
-    return value < this.value
-      ? valid<A>(value)
-      : invalid(validationError(`must be less than ${this.value}`));
-  }
-}
-function less<A>(value: A): Validator<false, A> {
-  return new LessValidator(value);
+function less<A>(value: A) {
+  return predicate<A>(
+    (v) => v < value,
+    validationError(`must be less than ${value}`)
+  );
 }
 
-class LessEqualValidator<A> extends Validator<false, A> {
-  constructor(private value: A) {
-    super();
-  }
-
-  validate(value: A): Result<A> {
-    return value <= this.value
-      ? valid<A>(value)
-      : invalid(validationError(`must be less than or equal to ${this.value}`));
-  }
-}
-function lessEqual<A>(value: A): Validator<false, A> {
-  return new LessEqualValidator(value);
+function lessEqual<A>(value: A) {
+  return predicate<A>(
+    (v) => v <= value,
+    validationError(`must be less than or equal to ${value}`)
+  );
 }
 
 // Number
 
-class MultipleValidator extends Validator<false, number> {
-  constructor(private base: number) {
-    super();
-  }
-  validate(value: any): Result<number> {
-    return Number.isInteger(value / this.base)
-      ? valid(value)
-      : invalid(validationError("foo"));
-  }
-}
-function multiple(base: number): Validator<false, number> {
-  return new MultipleValidator(base);
+function multiple(base: number) {
+  return predicate<number>(
+    (v) => Number.isInteger(v / base),
+    validationError(`must be a multiple of ${base}`)
+  );
 }
