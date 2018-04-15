@@ -170,10 +170,9 @@ export class ChainValidator<
       .chain((v) => (<any>this.second).validate(v));
   }
 
-  asyncValidate(value: any) {
-    return (<any>this.first)
-      .asyncValidate(value)
-      .then((res) => res.chain((v) => this.second.asyncValidate));
+  async asyncValidate(value: any) {
+    const result = await (<any>this.first).asyncValidate(value);
+    return result.chain((v) => (<any>this.second).asyncValidate(v));
   }
 }
 export function chain<PA extends boolean, A, PB extends boolean, B>(
@@ -200,9 +199,8 @@ class AndValidator<
   }
 
   async asyncValidate(value: any): Promise<Result<A & B>> {
-    return (<any>this.left)
-      .asyncValidate(value)
-      .then((res) => (<any>this.right).asyncValidate(value));
+    const result = await (<any>this.left).asyncValidate(value);
+    return result.chain(() => (<any>this.right).asyncValidate(value));
   }
 }
 
@@ -435,7 +433,7 @@ class ArrayValidator<P extends boolean, A> extends Validator<P, A[]> {
 
   validate(this: ArrayValidator<false, any>, value: any) {
     if (Array.isArray(value)) {
-      return this.logic(value.map(this.validator.validate));
+      return this.logic(value.map((v) => this.validator.validate(v)));
     }
     return invalid<A[]>(typeError("must be an array"));
   }
@@ -443,7 +441,7 @@ class ArrayValidator<P extends boolean, A> extends Validator<P, A[]> {
   async asyncValidate(this: ArrayValidator<true, any>, value: any) {
     if (Array.isArray(value)) {
       const results = await Promise.all(
-        value.map(this.validator.asyncValidate)
+        value.map((v) => this.validator.asyncValidate(v))
       );
       return this.logic(results);
     }
