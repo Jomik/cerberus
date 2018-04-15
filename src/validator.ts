@@ -1,6 +1,6 @@
 import { Result, valid, invalid } from "./result";
 import {
-  error,
+  validationError,
   propertyError,
   orError,
   typeError,
@@ -272,7 +272,9 @@ class XOrValidator<
       if (!rr.result.valid) {
         return lr;
       }
-      return invalid<A | B>(error("must not satisfy both conditions"));
+      return invalid<A | B>(
+        validationError("must not satisfy both conditions")
+      );
     } else if (rr.result.valid) {
       return rr;
     }
@@ -363,7 +365,7 @@ class IntegerValidator extends Validator<false, number> {
   validate(value: number) {
     return Number.isInteger(value)
       ? valid(value)
-      : invalid<number>(error("must be an integer"));
+      : invalid<number>(validationError("must be an integer"));
   }
 }
 export const integer: Validator<false, number> = new IntegerValidator();
@@ -560,7 +562,7 @@ class ObjectValidator<
       } else if (this.options.strict) {
         if (keys.size > 0) {
           return invalid<any>(
-            error(`unknown key(s): ${Array.from(keys).join(", ")}`)
+            validationError(`unknown key(s): ${Array.from(keys).join(", ")}`)
           );
         }
       } else {
@@ -632,7 +634,7 @@ class ObjectValidator<
       } else if (this.options.strict) {
         if (keys.size > 0) {
           return invalid<any>(
-            error(`unknown key(s): ${Array.from(keys).join(", ")}`)
+            validationError(`unknown key(s): ${Array.from(keys).join(", ")}`)
           );
         }
       } else {
@@ -709,7 +711,7 @@ class IdentityValidator<A> extends Validator<false, A> {
   validate(value: any): Result<A> {
     return value === this.value
       ? valid<A>(value)
-      : invalid(error(`must be ${this.value}`));
+      : invalid(validationError(`must be ${this.value}`));
   }
 }
 export function is<A>(value: A): Validator<false, A> {
@@ -724,7 +726,7 @@ class NonIdentityValidator<A> extends Validator<false, A> {
   validate(value: any): Result<A> {
     return value !== this.value
       ? valid<A>(value)
-      : invalid(error(`must not be ${this.value}`));
+      : invalid(validationError(`must not be ${this.value}`));
   }
 }
 function not<A>(value: A): Validator<false, A> {
@@ -739,7 +741,7 @@ class GreaterValidator<A> extends Validator<false, A> {
   validate(value: A): Result<A> {
     return value > this.value
       ? valid<A>(value)
-      : invalid(error(`must be greater than ${this.value}`));
+      : invalid(validationError(`must be greater than ${this.value}`));
   }
 }
 function greater<A>(value: A): Validator<false, A> {
@@ -754,7 +756,9 @@ class GreaterEqualValidator<A> extends Validator<false, A> {
   validate(value: A): Result<A> {
     return value >= this.value
       ? valid<A>(value)
-      : invalid(error(`must be greater than or equal to ${this.value}`));
+      : invalid(
+          validationError(`must be greater than or equal to ${this.value}`)
+        );
   }
 }
 function greaterEqual<A>(value: A): Validator<false, A> {
@@ -769,7 +773,7 @@ class LessValidator<A> extends Validator<false, A> {
   validate(value: A): Result<A> {
     return value < this.value
       ? valid<A>(value)
-      : invalid(error(`must be less than ${this.value}`));
+      : invalid(validationError(`must be less than ${this.value}`));
   }
 }
 function less<A>(value: A): Validator<false, A> {
@@ -784,7 +788,7 @@ class LessEqualValidator<A> extends Validator<false, A> {
   validate(value: A): Result<A> {
     return value <= this.value
       ? valid<A>(value)
-      : invalid(error(`must be less than or equal to ${this.value}`));
+      : invalid(validationError(`must be less than or equal to ${this.value}`));
   }
 }
 function lessEqual<A>(value: A): Validator<false, A> {
@@ -800,7 +804,7 @@ class MultipleValidator extends Validator<false, number> {
   validate(value: any): Result<number> {
     return Number.isInteger(value / this.base)
       ? valid(value)
-      : invalid(error("foo"));
+      : invalid(validationError("foo"));
   }
 }
 function multiple(base: number): Validator<false, number> {
