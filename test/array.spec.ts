@@ -15,4 +15,16 @@ describe("array", () => {
   it("rejects wrong entries", () => {
     expect(array(number).validate(["foo", 42, "bar"])).to.not.be.valid;
   });
+  it("async", async () => {
+    const schema = array(number.mapAsync((v) => Promise.resolve(v * 2)));
+    expect(await schema.asyncValidate([1, 2, 3])).to.be.valid.and.have.result([
+      2,
+      4,
+      6
+    ]);
+    ["foo", 42, {}, true].forEach(async (e) => {
+      expect(await (<any>array(any)).asyncValidate(e), `reject ${typeof e}`).to
+        .not.be.valid;
+    });
+  });
 });

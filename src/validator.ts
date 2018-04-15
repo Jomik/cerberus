@@ -294,9 +294,7 @@ class XOrValidator<
     super();
   }
 
-  validate(value: any) {
-    const lr = (<any>this.left).validate(value);
-    const rr = (<any>this.right).validate(value);
+  private logic(lr: Result<A>, rr: Result<B>) {
     if (lr.result.valid) {
       if (!rr.result.valid) {
         return lr;
@@ -310,18 +308,18 @@ class XOrValidator<
     return invalid<A | B>(orError(lr.result.error, rr.result.error));
   }
 
+  validate(value: any) {
+    const lr = (<any>this.left).validate(value);
+    const rr = (<any>this.right).validate(value);
+    return this.logic(lr, rr);
+  }
+
   async asyncValidate(value: any) {
-    const lr = await (<any>this.left).asyncValidate(value);
-    return lr.match({
-      valid: async () => lr,
-      invalid: async (le) => {
-        const rr = await (<any>this.right).asyncValidate(value);
-        return rr.match({
-          valid: () => rr,
-          invalid: (re) => invalid<A | B>(orError(le, re))
-        });
-      }
-    });
+    const [lr, rr] = await Promise.all([
+      (<any>this.left).asyncValidate(value),
+      (<any>this.right).asyncValidate(value)
+    ]);
+    return this.logic(lr, rr);
   }
 }
 export function xor<PA extends boolean, A, PB extends boolean, B>(
@@ -518,82 +516,6 @@ class ObjectValidator<
     );
   }
 
-  async asyncValidate(
-    this: ObjectValidator<true, any, any>,
-    value: any
-  ): Promise<Result<Id<A & { [index: string]: B }>>> {
-    if (typeof value === "object" && !Array.isArray(value)) {
-      let obj: A & { [index: string]: B } = <any>{};
-      let errors: [string, ValidationError][] = [];
-      const keys = new Set(Object.keys(value));
-
-      const basicResults = await Promise.all(
-        this.schemaEntries.map(
-          async ([k, v]) =>
-            <[keyof A, Result<A[keyof A]>]>[k, await v.asyncValidate(value[k])]
-        )
-      );
-      for (const [k, res] of basicResults) {
-        res.match<void>({
-          valid: (v) => (obj[k] = v),
-          invalid: (e) => errors.push([k, e])
-        });
-        keys.delete(k);
-      }
-
-      if (errors.length > 0) {
-        return invalid(objectError(errors));
-      }
-
-      for (const [k, vali] of this.schemaEntriesFunc) {
-        const res = await vali(obj).asyncValidate(value[k]);
-        const err = res.match<ValidationError | undefined>({
-          valid: (v) => (obj[k] = v),
-          invalid: (e) => e
-        });
-        if (err !== undefined) {
-          return invalid(objectError(<any>[k, err]));
-        }
-        keys.delete(k);
-      }
-
-      if (this.options.rest !== undefined) {
-        const vali =
-          typeof this.options.rest === "function"
-            ? this.options.rest(obj)
-            : this.options.rest;
-        const restResults = await Promise.all(
-          Array.from(keys).map(
-            async (k) =>
-              <[string, Result<B>]>[k, await vali.asyncValidate(value[k])]
-          )
-        );
-        for (const [k, res] of restResults) {
-          res.match<void>({
-            valid: (v) => (obj[k] = v),
-            invalid: (e) => errors.push([k, e])
-          });
-        }
-
-        if (errors.length > 0) {
-          return invalid(objectError(errors));
-        }
-      } else if (this.options.strict) {
-        if (keys.size > 0) {
-          return invalid<any>(
-            validationError(`unknown key(s): ${Array.from(keys).join(", ")}`)
-          );
-        }
-      } else {
-        for (const k of keys) {
-          obj[k] = value[k];
-        }
-      }
-      return valid(<Id<A & { [index: string]: B }>>obj);
-    }
-    return invalid(typeError("must be an object"));
-  }
-
   validate(
     this: ObjectValidator<false, any, any>,
     value: any
@@ -639,6 +561,84 @@ class ObjectValidator<
             : this.options.rest;
         const restResults = Array.from(keys).map(
           (k) => <[string, Result<B>]>[k, vali.validate(value[k])]
+        );
+        for (const [k, res] of restResults) {
+          res.match<void>({
+            valid: (v) => (obj[k] = v),
+            invalid: (e) => errors.push([k, e])
+          });
+        }
+
+        if (errors.length > 0) {
+          return invalid(objectError(errors));
+        }
+      } else if (this.options.strict) {
+        if (keys.size > 0) {
+          return invalid<any>(
+            validationError(`unknown key(s): ${Array.from(keys).join(", ")}`)
+          );
+        }
+      } else {
+        for (const k of keys) {
+          obj[k] = value[k];
+        }
+      }
+      return valid(<Id<A & { [index: string]: B }>>obj);
+    }
+    return invalid(typeError("must be an object"));
+  }
+
+  async asyncValidate(
+    this: ObjectValidator<true, any, any>,
+    value: any
+  ): Promise<Result<Id<A & { [index: string]: B }>>> {
+    if (typeof value === "object" && !Array.isArray(value)) {
+      let obj: A & { [index: string]: B } = <any>{};
+      let errors: [string, ValidationError][] = [];
+      const keys = new Set(Object.keys(value));
+
+      const basicResults = await Promise.all(
+        this.schemaEntries.map(
+          async ([k, v]) =>
+            <[keyof A, Result<A[keyof A]>]>[k, await v.asyncValidate(value[k])]
+        )
+      );
+      for (const [k, res] of basicResults) {
+        res.match<void>({
+          valid: (v) => (obj[k] = v),
+          invalid: (e) => errors.push([k, e])
+        });
+        keys.delete(k);
+      }
+
+      if (errors.length > 0) {
+        return invalid(objectError(errors));
+      }
+
+      for (const [k, vali] of this.schemaEntriesFunc) {
+        const res = await vali(obj).asyncValidate(value[k]);
+        const err = res.match<ValidationError | void>({
+          valid: (v) => {
+            obj[k] = v;
+          },
+          invalid: (e) => e
+        });
+        if (err !== undefined) {
+          return invalid(objectError([[k, err]]));
+        }
+        keys.delete(k);
+      }
+
+      if (this.options.rest !== undefined) {
+        const vali =
+          typeof this.options.rest === "function"
+            ? this.options.rest(obj)
+            : this.options.rest;
+        const restResults = await Promise.all(
+          Array.from(keys).map(
+            async (k) =>
+              <[string, Result<B>]>[k, await vali.asyncValidate(value[k])]
+          )
         );
         for (const [k, res] of restResults) {
           res.match<void>({

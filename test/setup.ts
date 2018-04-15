@@ -1,4 +1,6 @@
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+chai.use(chaiAsPromised);
 import { ValidResult, InvalidResult, ValidationError } from "../src";
 
 chai.use((_chai) => {
