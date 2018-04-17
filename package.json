@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "npm run build:es2015; npm run build:cmjs",
-    "build:es2015": "tsc -P ./tsconfig-build.json --outDir 'dist/es' --target es2015 --module es2015",
+    "build:es2015": "tsc -P ./tsconfig-build.json --outDir 'dist/es' --module es2015",
     "build:cmjs": "tsc -P ./tsconfig-build.json",
     "clean": "rm -rf dist coverage .nyc_output",
     "prepare": "npm run clean; npm run build",
