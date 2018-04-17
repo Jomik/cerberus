@@ -16,8 +16,8 @@ describe("number", () => {
     });
   });
   it("integer", () => {
-    expect(integer.validate(42)).to.be.valid;
-    expect(integer.validate(42.42)).to.not.be.valid;
+    expect(number.integer().validate(42)).to.be.valid;
+    expect(number.integer().validate(42.42)).to.not.be.valid;
   });
   property(
     "multiple",
@@ -42,14 +42,14 @@ describe("number", () => {
   );
   describe("relations", () => {
     property(
-      "gt",
+      "greater",
       QC.int.two(),
-      ([x, y]) => number.gt(x).validate(y).result.valid === y > x
+      ([x, y]) => number.greater(x).validate(y).result.valid === y > x
     );
     property(
-      "ge",
+      "greaterEqual",
       QC.int.two(),
-      ([x, y]) => number.ge(x).validate(y).result.valid === y >= x
+      ([x, y]) => number.greaterEqual(x).validate(y).result.valid === y >= x
     );
     property(
       "equal",
@@ -57,14 +57,14 @@ describe("number", () => {
       ([x, y]) => number.equal(x).validate(y).result.valid === (y === x)
     );
     property(
-      "le",
+      "lessEqual",
       QC.int.two(),
-      ([x, y]) => number.le(x).validate(y).result.valid === y <= x
+      ([x, y]) => number.lessEqual(x).validate(y).result.valid === y <= x
     );
     property(
-      "lt",
+      "less",
       QC.int.two(),
-      ([x, y]) => number.lt(x).validate(y).result.valid === y < x
+      ([x, y]) => number.less(x).validate(y).result.valid === y < x
     );
   });
 });

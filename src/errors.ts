@@ -16,7 +16,7 @@ export class ValidationError extends Error {
   }
 }
 
-export function error(message: string) {
+export function validationError(message: string) {
   return new ValidationError(message);
 }
 

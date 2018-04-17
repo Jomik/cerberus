@@ -27,7 +27,7 @@ describe("object", () => {
   it("lazy properties", () => {
     const schema = object({
       c: number,
-      b: ({ a, c }: { a: number; c: number }) => number.gt(a - c),
+      b: ({ a, c }: { a: number; c: number }) => number.greater(a - c),
       a: number
     });
     expect(schema.validate({ a: 20, b: 42, c: 0 }).result.valid, "accept lazy")
@@ -41,7 +41,7 @@ describe("object", () => {
     expect(schema.validate({ a: 42 }), "reject rest").to.not.be.valid;
     const lazySchema = object(
       { a: number },
-      { rest: ({ a }: { a: number }) => number.gt(a) }
+      { rest: ({ a }: { a: number }) => number.greater(a) }
     );
     expect(lazySchema.validate({ a: 42, b: 43 }), "accept lazy rest").to.be
       .valid;
@@ -56,6 +56,32 @@ describe("object", () => {
     expect(schema.validate({ a: 42, b: 42 })).to.be.valid.and.have.result({
       a: 42,
       b: 42
+    });
+  });
+  it("async", async () => {
+    const schema = object(
+      {
+        a: number.mapAsync((v) => Promise.resolve(v * 2)).greater(42),
+        f: ({ a }) => number.greater(a)
+      },
+      { rest: string.mapAsync((s) => Promise.resolve(s.toUpperCase())) }
+    );
+    expect(
+      await schema.asyncValidate({ a: 42, b: "foo", f: 100 })
+    ).to.be.valid.and.have.result({ a: 84, b: "FOO", f: 100 });
+    expect(await schema.asyncValidate({ a: 42, b: "foo", f: 2 })).to.not.be
+      .valid;
+    expect(await schema.asyncValidate({ a: 42, b: 42, f: 100 })).to.not.be
+      .valid;
+    expect(
+      await object(
+        { a: number.mapAsync((v) => Promise.resolve(v * 2)) },
+        { strict: true }
+      ).asyncValidate({ a: 42, b: 42 })
+    ).to.not.be.valid;
+    ["foo", 42, [], true].forEach(async (e) => {
+      expect(await (<any>object({})).asyncValidate(e), `reject ${typeof e}`).to
+        .not.be.valid;
     });
   });
 });

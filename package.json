@@ -10,8 +10,7 @@
   },
   "scripts": {
     "build": "npm run build:es2015; npm run build:cmjs",
-    "build:es2015":
-      "tsc -P ./tsconfig-build.json --outDir 'dist/es' --target es2015 --module es2015",
+    "build:es2015": "tsc -P ./tsconfig-build.json --outDir 'dist/es' --target es2015 --module es2015",
     "build:cmjs": "tsc -P ./tsconfig-build.json",
     "clean": "rm -rf dist coverage .nyc_output",
     "prepare": "npm run clean; npm run build",
@@ -25,7 +24,12 @@
     "type": "git",
     "url": "git+https://github.com/Jomik/cerberus.git"
   },
-  "keywords": ["typescript", "validate", "validator", "validation"],
+  "keywords": [
+    "typescript",
+    "validate",
+    "validator",
+    "validation"
+  ],
   "author": "Jonas Damtoft",
   "license": "MIT",
   "bugs": {
@@ -34,8 +38,10 @@
   "homepage": "https://github.com/Jomik/cerberus#readme",
   "devDependencies": {
     "@types/chai": "^4.1.2",
+    "@types/chai-as-promised": "^7.1.0",
     "@types/mocha": "^5.0.0",
     "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
     "codecov": "^3.0.0",
     "mocha": "^5.0.5",
     "np": "^2.20.1",
@@ -51,9 +57,19 @@
     "arrowParens": "always"
   },
   "nyc": {
-    "extension": [".ts"],
-    "require": ["ts-node/register", "source-map-support/register"],
-    "reporter": ["json", "html", "text", "lcov"]
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register",
+      "source-map-support/register"
+    ],
+    "reporter": [
+      "json",
+      "html",
+      "text",
+      "lcov"
+    ]
   },
   "dependencies": {}
 }
