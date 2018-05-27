@@ -1,6 +1,6 @@
 {
   "name": "cerberus",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Object Validator with Typescript support",
   "main": "dist/index.js",
   "module": "dist/es/index.js",
