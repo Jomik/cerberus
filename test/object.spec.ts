@@ -80,8 +80,8 @@ describe("object", () => {
       ).asyncValidate({ a: 42, b: 42 })
     ).to.not.be.valid;
     ["foo", 42, [], true].forEach(async (e) => {
-      expect(await (<any>object({})).asyncValidate(e), `reject ${typeof e}`).to
-        .not.be.valid;
+      expect(await object({}).asyncValidate(e), `reject ${typeof e}`).to.not.be
+        .valid;
     });
   });
 });

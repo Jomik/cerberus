@@ -23,8 +23,8 @@ describe("array", () => {
       6
     ]);
     ["foo", 42, {}, true].forEach(async (e) => {
-      expect(await (<any>array(any)).asyncValidate(e), `reject ${typeof e}`).to
-        .not.be.valid;
+      expect(await array(any).asyncValidate(e), `reject ${typeof e}`).to.not.be
+        .valid;
     });
   });
 });

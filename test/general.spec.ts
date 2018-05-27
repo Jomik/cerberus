@@ -60,7 +60,7 @@ describe("base methods", () => {
     expect(() => boolean.test(undefined)).to.throw(ValidationError);
   });
   describe("asyncTest", async () => {
-    const schema = <any>boolean;
+    const schema = boolean;
     expect(schema.asyncTest(true)).to.be.a("Promise");
     expect(await schema.asyncTest(true)).to.equal(true);
     expect(schema.asyncTest(42)).to.eventually.be.rejectedWith(ValidationError);
@@ -94,7 +94,7 @@ describe("map", () => {
     expect(schema.validate({ a: "foo" })).to.not.be.valid;
   });
   it("async", async () => {
-    const schema = <any>object({ a: any })
+    const schema = object({ a: any })
       .map(({ a }) => a)
       .greater(2);
     expect(await schema.asyncValidate({ a: 42 })).to.be.valid.and.have.result(
@@ -160,7 +160,7 @@ describe("or", () => {
     expect(schema.validate({})).to.not.be.valid;
   });
   it("async", async () => {
-    const schema = <any>number.or(string);
+    const schema = number.or(string);
     expect(await schema.asyncValidate(42)).to.be.valid;
     expect(await schema.asyncValidate("foo")).to.be.valid;
     expect(await schema.asyncValidate([])).to.not.be.valid;
@@ -185,7 +185,7 @@ describe("xor", () => {
     expect(schema.validate("bum")).to.not.be.valid;
   });
   it("async", async () => {
-    const schema = <any>string.includes("foo").xor(string.includes("bar"));
+    const schema = string.includes("foo").xor(string.includes("bar"));
     expect(await schema.asyncValidate("foo")).to.be.valid;
     expect(await schema.asyncValidate("bar")).to.be.valid;
     expect(await schema.asyncValidate("foobar")).to.not.be.valid;
@@ -207,7 +207,7 @@ describe("and", () => {
     expect(schema.validate({ a: 42, b: "foo" })).to.not.be.valid;
   });
   it("async", async () => {
-    const schema = <any>object({ a: number }).and(object({ b: number }));
+    const schema = object({ a: number }).and(object({ b: number }));
     expect(await schema.asyncValidate({ a: 42, b: 42 })).to.be.valid;
     expect(await schema.asyncValidate({ a: "foo", b: 42 })).to.not.be.valid;
     expect(await schema.asyncValidate({ a: 42, b: "foo" })).to.not.be.valid;

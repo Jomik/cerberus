@@ -11,16 +11,11 @@ export abstract class Result<A> {
     | { valid: false; error: ValidationError };
 
   abstract match<K>(m: ResultMatch<A, K>): K;
-
-  chain<B>(f: (object: A) => B): B {
-    return this.match({
-      valid: (o) => f(o),
-      invalid: () => <any>this
-    });
-  }
+  abstract chain<B>(f: (object: A) => Promise<Result<B>>): Promise<Result<B>>;
+  abstract chain<B>(f: (object: A) => Result<B>): Result<B>;
 }
 
-export class ValidResult<A> extends Result<A> {
+class ValidResult<A> extends Result<A> {
   readonly result: { valid: true; object: A };
   constructor(object: A) {
     super();
@@ -30,9 +25,13 @@ export class ValidResult<A> extends Result<A> {
   match<K>(m: ResultMatch<A, K>) {
     return m.valid(this.result.object);
   }
+
+  chain<B>(f: Function) {
+    return f(this.result.object);
+  }
 }
 
-export class InvalidResult extends Result<any> {
+class InvalidResult extends Result<any> {
   readonly result: { valid: false; error: ValidationError };
   constructor(error: ValidationError) {
     super();
@@ -41,6 +40,10 @@ export class InvalidResult extends Result<any> {
 
   match<K>(m: ResultMatch<any, K>) {
     return m.invalid(this.result.error);
+  }
+
+  chain(f: Function) {
+    return <any>this;
   }
 }
 
