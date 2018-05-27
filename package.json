@@ -13,7 +13,7 @@
     "build:es2015": "tsc -P ./tsconfig-build.json --outDir 'dist/es' --module es2015",
     "build:cmjs": "tsc -P ./tsconfig-build.json",
     "clean": "rm -rf dist coverage .nyc_output",
-    "prepare": "npm run clean",
+    "prepare": "npm run clean; npm run build",
     "format": "prettier --write \"{src,test}/**/*.ts\"",
     "release": "np",
     "test": "nyc mocha --timeout 5000 test/*.spec.ts",
