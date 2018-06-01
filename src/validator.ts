@@ -495,11 +495,11 @@ class ObjectValidator<
     this.options = options;
 
     const entries = Object.entries<SchemaEntry<P, A, A>>(<any>schema);
-    this.schemaEntries = <any>entries.filter(
-      ([k, v]) => typeof v !== "function"
+    this.schemaEntries = <any>(
+      entries.filter(([k, v]) => typeof v !== "function")
     );
-    this.schemaEntriesFunc = <any>entries.filter(
-      ([k, v]) => typeof v === "function"
+    this.schemaEntriesFunc = <any>(
+      entries.filter(([k, v]) => typeof v === "function")
     );
   }
 
@@ -518,9 +518,9 @@ class ObjectValidator<
       for (const [k, res] of basicResults) {
         res.match<void>({
           valid: (v) => (obj[k] = v),
-          invalid: (e) => errors.push([k, e])
+          invalid: (e) => errors.push([k.toString(), e])
         });
-        keys.delete(k);
+        keys.delete(k.toString());
       }
 
       if (errors.length > 0) {
@@ -531,14 +531,14 @@ class ObjectValidator<
         const res = vali(obj).validate(value[k]);
         const err = res.match<ValidationError | void>({
           valid: (v) => {
-            obj[k] = v;
+            obj[<keyof A>k] = v;
           },
           invalid: (e) => e
         });
         if (err !== undefined) {
           return invalid(objectError(<any>[k, err]));
         }
-        keys.delete(k);
+        keys.delete(k.toString());
       }
 
       if (this.options.rest !== undefined) {
@@ -592,9 +592,9 @@ class ObjectValidator<
       for (const [k, res] of basicResults) {
         res.match<void>({
           valid: (v) => (obj[k] = v),
-          invalid: (e) => errors.push([k, e])
+          invalid: (e) => errors.push([k.toString(), e])
         });
-        keys.delete(k);
+        keys.delete(k.toString());
       }
 
       if (errors.length > 0) {
@@ -610,9 +610,9 @@ class ObjectValidator<
           invalid: (e) => e
         });
         if (err !== undefined) {
-          return invalid(objectError([[k, err]]));
+          return invalid(objectError([[k.toString(), err]]));
         }
-        keys.delete(k);
+        keys.delete(k.toString());
       }
 
       if (this.options.rest !== undefined) {
@@ -731,7 +731,7 @@ class PropertyValidator<
     const result = await this.validator.asyncValidate(value[this.prop]);
     return result.match({
       valid: () => valid(value),
-      invalid: (e) => invalid(propertyError(this.prop, e))
+      invalid: (e) => invalid(propertyError(this.prop.toString(), e))
     });
   }
 }

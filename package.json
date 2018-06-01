@@ -37,21 +37,21 @@
   },
   "homepage": "https://github.com/Jomik/cerberus#readme",
   "devDependencies": {
-    "@types/chai": "^4.1.2",
+    "@types/chai": "^4.1.3",
     "@types/chai-as-promised": "^7.1.0",
-    "@types/mocha": "^5.0.0",
+    "@types/mocha": "^5.2.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
-    "codecov": "^3.0.0",
-    "mocha": "^5.0.5",
-    "np": "^3.0.0",
-    "nyc": "^11.6.0",
-    "prettier": "^1.11.1",
+    "codecov": "^3.0.2",
+    "mocha": "^5.2.0",
+    "np": "^3.0.1",
+    "nyc": "^11.9.0",
+    "prettier": "^1.13.3",
     "proptest": "0.0.4",
-    "source-map-support": "^0.5.4",
-    "ts-node": "^6.0.0",
-    "tslint": "^5.9.1",
-    "typescript": "^2.8.3"
+    "source-map-support": "^0.5.6",
+    "ts-node": "^6.0.5",
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.1"
   },
   "prettier": {
     "arrowParens": "always"
