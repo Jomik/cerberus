@@ -189,10 +189,8 @@ class ChainValidator<
     super();
   }
 
-  validate(value: any) {
-    return (<any>this.first)
-      .validate(value)
-      .chain((v) => (<any>this.second).validate(v));
+  validate(this: ChainValidator<false, any, false, any>, value: any) {
+    return this.first.validate(value).chain((v) => this.second.validate(v));
   }
 
   async asyncValidate(value: any) {
@@ -366,21 +364,22 @@ export function mapAsync<A, B>(
 
 class PredicateValidator<A> extends Validator<false, A> {
   constructor(
-    private pred: (value: A) => boolean,
+    private f: (value: A) => boolean,
     private error: ValidationError
   ) {
     super();
   }
 
   validate(value: A): Result<A> {
-    return this.pred(value) ? valid(value) : invalid(this.error);
+    return this.f(value) ? valid(value) : invalid(this.error);
   }
 }
+
 function predicate<A>(
-  pred: (value: A) => boolean,
+  f: (value: A) => boolean,
   error: ValidationError
 ): Validator<false, A> {
-  return new PredicateValidator(pred, error);
+  return new PredicateValidator(f, error);
 }
 
 // Initializers
@@ -477,22 +476,14 @@ export type Schema<P extends boolean, A extends object> = {
   [K in keyof A]: SchemaEntry<P, A, A[K]>
 };
 
-class ObjectValidator<
-  P extends boolean,
-  A extends object,
-  B = never
-> extends Validator<P, Id<A & { [index: string]: B }>> {
+class ObjectValidator<P extends boolean, A extends object> extends Validator<
+  P,
+  A
+> {
   private schemaEntries: [keyof A, Validator<P, A[keyof A]>][];
   private schemaEntriesFunc: [keyof A, (obj: A) => Validator<P, A[keyof A]>][];
-  private options: { rest?: SchemaEntry<P, A, B>; strict?: boolean };
-  constructor(
-    private schema: Schema<P, A>,
-    options: { rest: SchemaEntry<P, A, B> } | { strict: boolean } = {
-      strict: false
-    }
-  ) {
+  constructor(private schema: Schema<P, A>, private strict: boolean = false) {
     super();
-    this.options = options;
 
     const entries = Object.entries<SchemaEntry<P, A, A>>(<any>schema);
     this.schemaEntries = <any>(
@@ -503,12 +494,9 @@ class ObjectValidator<
     );
   }
 
-  validate(
-    this: ObjectValidator<false, any, any>,
-    value: any
-  ): Result<Id<A & { [index: string]: B }>> {
+  validate(this: ObjectValidator<false, any>, value: any): Result<A> {
     if (typeof value === "object" && !Array.isArray(value)) {
-      let obj: A & { [index: string]: B } = <any>{};
+      let obj: A = <any>{};
       let errors: [string, ValidationError][] = [];
       const keys = new Set(Object.keys(value));
 
@@ -541,25 +529,7 @@ class ObjectValidator<
         keys.delete(k.toString());
       }
 
-      if (this.options.rest !== undefined) {
-        const vali =
-          typeof this.options.rest === "function"
-            ? this.options.rest(obj)
-            : this.options.rest;
-        const restResults = Array.from(keys).map(
-          (k) => <[string, Result<B>]>[k, vali.validate(value[k])]
-        );
-        for (const [k, res] of restResults) {
-          res.match<void>({
-            valid: (v) => (obj[k] = v),
-            invalid: (e) => errors.push([k, e])
-          });
-        }
-
-        if (errors.length > 0) {
-          return invalid(objectError(errors));
-        }
-      } else if (this.options.strict) {
+      if (this.strict) {
         if (keys.size > 0) {
           return invalid<any>(
             validationError(`unknown key(s): ${Array.from(keys).join(", ")}`)
@@ -570,16 +540,14 @@ class ObjectValidator<
           obj[k] = value[k];
         }
       }
-      return valid(<Id<A & { [index: string]: B }>>obj);
+      return valid(obj);
     }
     return invalid(typeError("must be an object"));
   }
 
-  async asyncValidate(
-    value: any
-  ): Promise<Result<Id<A & { [index: string]: B }>>> {
+  async asyncValidate(value: any): Promise<Result<A>> {
     if (typeof value === "object" && !Array.isArray(value)) {
-      let obj: A & { [index: string]: B } = <any>{};
+      let obj: A = <any>{};
       let errors: [string, ValidationError][] = [];
       const keys = new Set(Object.keys(value));
 
@@ -615,28 +583,7 @@ class ObjectValidator<
         keys.delete(k.toString());
       }
 
-      if (this.options.rest !== undefined) {
-        const vali =
-          typeof this.options.rest === "function"
-            ? this.options.rest(obj)
-            : this.options.rest;
-        const restResults = await Promise.all(
-          Array.from(keys).map(
-            async (k) =>
-              <[string, Result<B>]>[k, await vali.asyncValidate(value[k])]
-          )
-        );
-        for (const [k, res] of restResults) {
-          res.match<void>({
-            valid: (v) => (obj[k] = v),
-            invalid: (e) => errors.push([k, e])
-          });
-        }
-
-        if (errors.length > 0) {
-          return invalid(objectError(errors));
-        }
-      } else if (this.options.strict) {
+      if (this.strict) {
         if (keys.size > 0) {
           return invalid<any>(
             validationError(`unknown key(s): ${Array.from(keys).join(", ")}`)
@@ -647,41 +594,25 @@ class ObjectValidator<
           obj[k] = value[k];
         }
       }
-      return valid(<Id<A & { [index: string]: B }>>obj);
+      return valid(obj);
     }
     return invalid(typeError("must be an object"));
   }
 }
 
-export function object<A extends object, B>(
-  schema: Schema<false, A>,
-  options: { rest: SchemaEntry<false, A, B> }
-): Validator<false, Id<A & { [index: string]: B }>>;
 export function object<A extends object>(
   schema: Schema<false, A>,
-  options: { strict: boolean }
+  strict?: boolean
 ): Validator<false, A>;
 export function object<A extends object>(
-  schema: Schema<false, A>
-): Validator<false, A>;
-
-export function object<A extends object, B>(
   schema: Schema<boolean, A>,
-  options: { rest: SchemaEntry<boolean, A, B> }
-): Validator<true, Id<A & { [index: string]: B }>>;
-export function object<A extends object>(
-  schema: Schema<boolean, A>,
-  options: { strict: boolean }
+  strict?: boolean
 ): Validator<true, A>;
-export function object<A extends object>(
-  schema: Schema<boolean, A>
-): Validator<true, A>;
-
-export function object<A extends object, B = never>(
-  schema: Schema<boolean, A>,
-  options?: { rest: SchemaEntry<boolean, A, B> } | { strict: boolean }
-): Validator<boolean, Id<A & { [index: string]: B }>> {
-  return new ObjectValidator(schema, options);
+export function object<PA extends boolean, A extends object>(
+  schema: Schema<PA, A>,
+  strict: boolean = false
+): Validator<PA, A> {
+  return new ObjectValidator(schema, strict);
 }
 
 // General validators
