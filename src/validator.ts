@@ -40,7 +40,9 @@ export abstract class Validator<PA extends boolean, A> {
     });
   }
 
-  chain<PB extends boolean, B>(other: Validator<PB, B>): Validator<PA | PB, B> {
+  private chain<PB extends boolean, B>(
+    other: Validator<PB, B>
+  ): Validator<PA | PB, B> {
     return new ChainValidator(this, other);
   }
 
