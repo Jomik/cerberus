@@ -1,6 +1,6 @@
 # Cerberus
 
-_Thé typescript object validator_ \
+_The typescript object validator_ \
 Experimental, work in progress.
 
 [![Build Status](https://travis-ci.org/Jomik/cerberus.svg?branch=master)](https://travis-ci.org/Jomik/cerberus)
@@ -32,11 +32,12 @@ if (result.valid) {
 
 ## Features
 
-* Validation against types and exact values
-* Correctly typed result object
-* Relevant constraints for each type, e.g. string.length
-* Optional and default values
-* Referencing values within objects
+- Validation against types and exact values
+- Correctly typed result object
+- Relevant constraints for each type, e.g. string.length
+- Optional and default values
+- Referencing values within objects
+- Asynchronously validate values with mapAsync
 
 ## Installation
 
@@ -47,10 +48,11 @@ npm install cerberus
 ## Examples
 
 ```ts
-import { object, array, string, number } from "cerberus";
+import { object, array, string, integer } from "cerberus";
 
-const person = object({ name: string, id: number });
-const schema = person.extend({
+const person = object({ name: string, id: integer.positive() });
+const schema = object({
+  ...person.schema,
   mother: person,
   father: person,
   children: array(person)
@@ -64,82 +66,82 @@ const result = schema.validate({
 });
 ```
 
-## API Reference
+## API Documentation
 
 _Temporary_
 
-#### `BaseType<A>`
+### Types
 
-Returns type `A` when validated
+The below functions are exposed to create a validator.
 
-`Type#validate(obj: any)` Validates object against schema \
-`Type#optional()` Allows the value to be undefined \
-`Type#default(value: A)` Sets a default `value` if object is undefined
+- `boolean: Validator<boolean>`
+- `number: Validator<number>`
+- `string: Validator<string>`
+- `any: Validator<any>`
+- `integer: Validator<number>` - not a decimal
+- `nil: Validator<null>`
+- `required: Validator<any>` - not undefined and not null
+- `forbidden: Validator<undefined>`
+- `array(Validator<A>): Validator<A[]>`
+- `object(Schema<A>): Validator<A>`
 
-#### `AnyType`
+A schema is an object where each property is a validator or a function from `A` to a validator.
 
-Returns type `any` when validated
+### Runners
 
-### `BooleanType`
+Below are the two methods of running a validator. Both of these also have an async version, called by appending `Async`.
 
-Returns type `boolean` when validated \
- `#truthy(...values: any[])` Perceives values as true \
- `#falsy(...values: any[])` Perceives values as false
+#### `validate(Validator<A>, value): Result<A>`, `validateAsync(Validator<A>, value): Result<A>`
 
-#### `NumberType`
+Result contains an `info` property, which is an object containing whether the result is valid or not, and if it is valid, it holds the validated value, else it holds an error.
 
-Returns type `number` when validated \
- `#gt/ge/eq/le/lt(n: number)` Requires number to satisfy the equality \
- `#between(low: number, high: number)` Requires the number to be between `low` and `high`, inclusive \
- `#negative()` Requires the number to be negative \
- `#positive()` Requires the number to be positive \
- `#multiple(n: number)` Requires the number to be a multiple of `n`
+`info: { valid: true; object: A } | { valid: false; error: ValidationError }`
 
-#### `StringType`
+#### `assert(Validator<A>, value): A`, `assertAsync(Validator<A>, value): A`
 
-Returns type `string` when validated \
- `#includes(str: string)` Requires the string to include `str` \
- `#matches(exp: RegExp)` Requires the string to match `exp` \
- `#alphanum()` Requires the string to be alphanumeric \
- `#email()` Requires the string to be an email \
- `.length#gt/ge/eq/le/lt(n: number)` Requires the length of the string to satisfy the equality
+Returns the validated value, or throws an error if invalid.
 
-#### `ArrayType<A>`
+### Logical operators
 
-Returns type `Array<A>` when validated \
- _Constructed with a Type_ \
-`#includes(value: A)` Requires that the array includes `value`, checked with deep equality \
- `#some(predicate: (obj: A) => boolean, description: string)` Requires some element to satisfy the predicate \
- `.length#gt/ge/eq/le/lt(n: number)` Requires the length of the array to satisfy the equality \
- `.length#between(low: number, high: number)` Requires length of array to be between `low` and `high`, inclusive
+The below functions are exposed for logical operations on validators.
+They are also methods on the class, if you prefer chaining.
 
-#### `ObjectType<A>`
+#### `and(Validator<A>, Validator<B>): Validator<A & B>`
 
-Returns type `object` with keys from `A` when validated \
- _Constructed with an ObjectSchema_ \
- `#merge(spec: ObjectSchema<B>` Merges `spec` into the schema's specification, overriding clashes \
- `#strict()` Requires the object to have exactly the keys specified
+Short circuits if the first is invalid.
 
-```ts
-type ObjectSchema<A extends object> = {
-  [k in keyof A]: Type<A[k]> | ((obj: A) => Type<A[k]>)
-};
-```
+#### `or(Validator<A>, Validator<B>): Validator<A | B>`
 
-#### Functions
+Short circuits if the first is valid.
 
-`validate(schema: Type, obj: any)` Validates object against schema \
-`is(a: any)` Requires the value to be exactly `a` \
-`oneOf(...values: any[])` Requires the value to be one of the arguments \
-`alternatives(...schemas: BaseType)` Requires the value to satisfy one of the arguments \
-`forbidden` Requires the object to be undefined, useful for object keys
+#### `xor(Validator<A>, Validator<B>): Validator<A | B>`
+
+Is valid if only one is valid, invalid in all other cases.
+
+### Methods
+
+#### `#default(a: A): Validator<A>`
+
+Allows the value to be undefined, and returns `a` in that case.
+
+#### `#optional<A>(): Validator<A | undefined>`
+
+Allows the value to be undefined.
+
+#### `#not(a: A): Validator<A>`
+
+Ensures that the value is not strictly equal to `a`.
+
+#### `#map(A -> B): Validator<B>`, `mapAsync(A -> Promise<B>): Validator<B>`
+
+Maps the result through the function if the validator returns valid.
 
 ## Contribute
 
 Please submit an issue with outlining your idea. If small, a pull request can be submitted immediately.
 
-* [Pull Requests](https://github.com/Jomik/cerberus/pulls)
-* [Issues](https://github.com/Jomik/cerberus/issues)
+- [Pull Requests](https://github.com/Jomik/cerberus/pulls)
+- [Issues](https://github.com/Jomik/cerberus/issues)
 
 ## License
 
