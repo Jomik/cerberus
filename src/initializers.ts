@@ -96,10 +96,10 @@ class ArrayValidator<P extends boolean, A> extends Validator<P, A[]> {
     return invalid<A[]>(typeError("must be an array"));
   }
 
-  async asyncValidate(value: any) {
+  async validateAsync(value: any) {
     if (Array.isArray(value)) {
       const results = await Promise.all(
-        value.map((v) => this.validator.asyncValidate(v))
+        value.map((v) => this.validator.validateAsync(v))
       );
       return this.logic(results);
     }
@@ -125,7 +125,10 @@ class ObjectValidator<P extends boolean, A extends object> extends Validator<
 > {
   private schemaEntries: [keyof A, Validator<P, A[keyof A]>][];
   private schemaEntriesFunc: [keyof A, (obj: A) => Validator<P, A[keyof A]>][];
-  constructor(private schema: Schema<P, A>, private strict: boolean = false) {
+  constructor(
+    public readonly schema: Schema<P, A>,
+    private strict: boolean = false
+  ) {
     super();
 
     const entries = Object.entries<SchemaEntry<P, A, A>>(<any>schema);
@@ -188,7 +191,7 @@ class ObjectValidator<P extends boolean, A extends object> extends Validator<
     return invalid(typeError("must be an object"));
   }
 
-  async asyncValidate(value: any): Promise<Result<A>> {
+  async validateAsync(value: any): Promise<Result<A>> {
     if (typeof value === "object" && !Array.isArray(value)) {
       let obj: A = <any>{};
       let errors: [string, ValidationError][] = [];
@@ -197,7 +200,7 @@ class ObjectValidator<P extends boolean, A extends object> extends Validator<
       const basicResults = await Promise.all(
         this.schemaEntries.map(
           async ([k, v]) =>
-            <[keyof A, Result<A[keyof A]>]>[k, await v.asyncValidate(value[k])]
+            <[keyof A, Result<A[keyof A]>]>[k, await v.validateAsync(value[k])]
         )
       );
       for (const [k, res] of basicResults) {
@@ -213,7 +216,7 @@ class ObjectValidator<P extends boolean, A extends object> extends Validator<
       }
 
       for (const [k, vali] of this.schemaEntriesFunc) {
-        const res = await vali(obj).asyncValidate(value[k]);
+        const res = await vali(obj).validateAsync(value[k]);
         const err = res.match<ValidationError | void>({
           valid: (v) => {
             obj[k] = v;
@@ -246,14 +249,14 @@ class ObjectValidator<P extends boolean, A extends object> extends Validator<
 export function object<A extends object>(
   schema: Schema<false, A>,
   strict?: boolean
-): Validator<false, A>;
+): ObjectValidator<false, A>;
 export function object<A extends object>(
   schema: Schema<boolean, A>,
   strict?: boolean
-): Validator<true, A>;
+): ObjectValidator<true, A>;
 export function object<PA extends boolean, A extends object>(
   schema: Schema<PA, A>,
   strict: boolean = false
-): Validator<PA, A> {
+): ObjectValidator<PA, A> {
   return new ObjectValidator(schema, strict);
 }

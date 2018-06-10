@@ -6,40 +6,40 @@ export type ResultMatch<A, K> = {
 };
 
 export abstract class Result<A> {
-  abstract readonly result:
-    | { valid: true; object: A }
+  abstract readonly info:
+    | { valid: true; value: A }
     | { valid: false; error: ValidationError };
 
   abstract match<K>(m: ResultMatch<A, K>): K;
-  abstract chain<B>(f: (object: A) => Promise<Result<B>>): Promise<Result<B>>;
-  abstract chain<B>(f: (object: A) => Result<B>): Result<B>;
+  abstract chain<B>(f: (value: A) => Promise<Result<B>>): Promise<Result<B>>;
+  abstract chain<B>(f: (value: A) => Result<B>): Result<B>;
 }
 
 class ValidResult<A> extends Result<A> {
-  readonly result: { valid: true; object: A };
-  constructor(object: A) {
+  readonly info: { valid: true; value: A };
+  constructor(value: A) {
     super();
-    this.result = { valid: true, object };
+    this.info = { valid: true, value };
   }
 
   match<K>(m: ResultMatch<A, K>) {
-    return m.valid(this.result.object);
+    return m.valid(this.info.value);
   }
 
   chain<B>(f: Function) {
-    return f(this.result.object);
+    return f(this.info.value);
   }
 }
 
 class InvalidResult extends Result<any> {
-  readonly result: { valid: false; error: ValidationError };
+  readonly info: { valid: false; error: ValidationError };
   constructor(error: ValidationError) {
     super();
-    this.result = { valid: false, error };
+    this.info = { valid: false, error };
   }
 
   match<K>(m: ResultMatch<any, K>) {
-    return m.invalid(this.result.error);
+    return m.invalid(this.info.error);
   }
 
   chain(f: Function) {
@@ -47,8 +47,8 @@ class InvalidResult extends Result<any> {
   }
 }
 
-export function valid<A>(object: A): Result<A> {
-  return new ValidResult(object);
+export function valid<A>(value: A): Result<A> {
+  return new ValidResult(value);
 }
 
 export function invalid<A = any>(error: ValidationError): Result<A> {

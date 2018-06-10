@@ -5,7 +5,7 @@ import { ValidationError } from "../src";
 
 chai.use((_chai) => {
   _chai.Assertion.addProperty("valid", function() {
-    const result = this._obj.result;
+    const result = this._obj.info;
     const error = result.error ? result.error.details() : undefined;
     this.assert(
       this._obj.match({ valid: () => true, invalid: () => false }),
@@ -16,6 +16,6 @@ chai.use((_chai) => {
     );
   });
   _chai.Assertion.addMethod("result", function(expected) {
-    new _chai.Assertion(this._obj.result.object).to.deep.equal(expected);
+    new _chai.Assertion(this._obj.info.value).to.deep.equal(expected);
   });
 });

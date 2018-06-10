@@ -13,7 +13,7 @@ export abstract class Validator<PA extends boolean, A> {
 
   abstract validate(this: Validator<false, any>, value: any): Result<A>;
 
-  test(this: Validator<false, any>, value: any): A {
+  assert(this: Validator<false, any>, value: any): A {
     return this.validate(value).match({
       valid: (val) => val,
       invalid: (err) => {
@@ -22,12 +22,12 @@ export abstract class Validator<PA extends boolean, A> {
     });
   }
 
-  async asyncValidate(value: any): Promise<Result<A>> {
+  async validateAsync(value: any): Promise<Result<A>> {
     return Promise.resolve((<any>this).validate(value));
   }
 
-  async asyncTest(value: any): Promise<A> {
-    const result = await this.asyncValidate(value);
+  async assertAsync(value: any): Promise<A> {
+    const result = await this.validateAsync(value);
     return result.match({
       valid: (val) => val,
       invalid: (err) => {
@@ -43,29 +43,29 @@ export abstract class Validator<PA extends boolean, A> {
   }
 
   map<B>(f: (value: A) => B): Validator<PA, B> {
-    return map(this, f);
+    return new MapValidator(this, f);
   }
 
   mapAsync<B>(f: (value: A) => Promise<B>): Validator<true, B> {
-    return mapAsync(this, f);
+    return new MapAsyncValidator(this, f);
   }
 
   and<PB extends boolean, B>(
     right: Validator<PB, B>
   ): Validator<PA | PB, A & B> {
-    return and(this, right);
+    return new AndValidator(this, right);
   }
 
   or<PB extends boolean, B>(
     right: Validator<PB, B>
   ): Validator<PA | PB, A | B> {
-    return or(this, right);
+    return new OrValidator(this, right);
   }
 
   xor<PB extends boolean, B>(
     right: Validator<PB, B>
   ): Validator<PA | PB, A | B> {
-    return xor(this, right);
+    return new XOrValidator(this, right);
   }
 
   optional(): Validator<PA, A | undefined> {
@@ -78,6 +78,10 @@ export abstract class Validator<PA extends boolean, A> {
 
   not(value: A) {
     return this.chain(predicate<A>((v) => v !== value, `must not be ${value}`));
+  }
+
+  predicate(f: (value: A) => boolean, error: string) {
+    return this.chain(predicate(f, error));
   }
 
   length<P extends boolean>(
@@ -146,7 +150,7 @@ export abstract class Validator<PA extends boolean, A> {
     upper: Date
   ): Validator<PA, Date>;
   between(lower: any, upper: any): Validator<any, any> {
-    return this.chain(and(greater(lower), less(upper)));
+    return this.chain(greater(lower).and(less(upper)));
   }
 
   positive(this: Validator<any, number>): Validator<PA, number> {
@@ -175,9 +179,9 @@ class ChainValidator<
     return this.first.validate(value).chain((v) => this.second.validate(v));
   }
 
-  async asyncValidate(value: any) {
-    const result = await this.first.asyncValidate(value);
-    return result.chain((v) => this.second.asyncValidate(v));
+  async validateAsync(value: any) {
+    const result = await this.first.validateAsync(value);
+    return result.chain((v) => this.second.validateAsync(v));
   }
 }
 
@@ -198,17 +202,10 @@ class AndValidator<
     return this.left.validate(value).chain(() => this.right.validate(value));
   }
 
-  async asyncValidate(value: any): Promise<Result<A & B>> {
-    const result = await this.left.asyncValidate(value);
-    return <any>result.chain(() => this.right.asyncValidate(value));
+  async validateAsync(value: any): Promise<Result<A & B>> {
+    const result = await this.left.validateAsync(value);
+    return <any>result.chain(() => this.right.validateAsync(value));
   }
-}
-
-export function and<PA extends boolean, A, PB extends boolean, B>(
-  left: Validator<PA, A>,
-  right: Validator<PB, B>
-): Validator<PA | PB, A & B> {
-  return new AndValidator(left, right);
 }
 
 class OrValidator<
@@ -232,12 +229,12 @@ class OrValidator<
     });
   }
 
-  async asyncValidate(value: any) {
-    const lr = await this.left.asyncValidate(value);
+  async validateAsync(value: any) {
+    const lr = await this.left.validateAsync(value);
     return lr.match({
       valid: async () => lr,
       invalid: async (le) => {
-        const rr = await this.right.asyncValidate(value);
+        const rr = await this.right.validateAsync(value);
         return rr.match({
           valid: () => rr,
           invalid: (re) => invalid<A | B>(orError(le, re))
@@ -245,12 +242,6 @@ class OrValidator<
       }
     });
   }
-}
-export function or<PA extends boolean, A, PB extends boolean, B>(
-  left: Validator<PA, A>,
-  right: Validator<PB, B>
-): Validator<PA | PB, A | B> {
-  return new OrValidator(left, right);
 }
 
 class XOrValidator<
@@ -264,15 +255,15 @@ class XOrValidator<
   }
 
   private logic(lr: Result<A>, rr: Result<B>): Result<A | B> {
-    if (lr.result.valid) {
-      if (!rr.result.valid) {
+    if (lr.info.valid) {
+      if (!rr.info.valid) {
         return lr;
       }
       return invalid(validationError("must not satisfy both conditions"));
-    } else if (rr.result.valid) {
+    } else if (rr.info.valid) {
       return rr;
     }
-    return invalid(orError(lr.result.error, rr.result.error));
+    return invalid(orError(lr.info.error, rr.info.error));
   }
 
   validate(this: XOrValidator<false, any, false, any>, value: any) {
@@ -281,19 +272,13 @@ class XOrValidator<
     return this.logic(lr, rr);
   }
 
-  async asyncValidate(value: any) {
+  async validateAsync(value: any) {
     const [lr, rr] = await Promise.all([
-      this.left.asyncValidate(value),
-      this.right.asyncValidate(value)
+      this.left.validateAsync(value),
+      this.right.validateAsync(value)
     ]);
     return this.logic(lr, rr);
   }
-}
-export function xor<PA extends boolean, A, PB extends boolean, B>(
-  left: Validator<PA, A>,
-  right: Validator<PB, B>
-): Validator<PA | PB, A | B> {
-  return new XOrValidator(left, right);
 }
 
 class MapValidator<PA extends boolean, A, B> extends Validator<PA, B> {
@@ -305,19 +290,13 @@ class MapValidator<PA extends boolean, A, B> extends Validator<PA, B> {
     return this.validator.validate(value).chain((v) => valid(this.f(v)));
   }
 
-  async asyncValidate(
+  async validateAsync(
     this: MapValidator<true, any, any>,
     value: any
   ): Promise<Result<B>> {
-    const result = await this.validator.asyncValidate(value);
+    const result = await this.validator.validateAsync(value);
     return result.chain((v) => valid(this.f(v)));
   }
-}
-export function map<PA extends boolean, A, B>(
-  validator: Validator<PA, A>,
-  f: (value: A) => B
-): Validator<PA, B> {
-  return new MapValidator(validator, f);
 }
 
 class MapAsyncValidator<A, B> extends Validator<true, B> {
@@ -332,16 +311,10 @@ class MapAsyncValidator<A, B> extends Validator<true, B> {
     throw new Error("trying to synchronously validate an asynchron validator");
   }
 
-  async asyncValidate(value: any): Promise<Result<B>> {
-    const result = await this.validator.asyncValidate(value);
+  async validateAsync(value: any): Promise<Result<B>> {
+    const result = await this.validator.validateAsync(value);
     return result.chain(async (v) => valid(await this.f(v)));
   }
-}
-export function mapAsync<A, B>(
-  validator: Validator<boolean, A>,
-  f: (value: A) => Promise<B>
-): Validator<true, B> {
-  return new MapAsyncValidator(validator, f);
 }
 
 class PredicateValidator<A> extends Validator<false, A> {
@@ -435,8 +408,8 @@ class PropertyValidator<
     });
   }
 
-  async asyncValidate(value: any) {
-    const result = await this.validator.asyncValidate(value[this.prop]);
+  async validateAsync(value: any) {
+    const result = await this.validator.validateAsync(value[this.prop]);
     return result.match({
       valid: () => valid(value),
       invalid: (e) => invalid(propertyError(this.prop.toString(), e))

@@ -55,15 +55,17 @@ describe("trivial types", () => {
 });
 
 describe("base methods", () => {
-  describe("test", () => {
-    expect(boolean.test(true)).to.equal(true);
-    expect(() => boolean.test(undefined)).to.throw(ValidationError);
+  describe("assert", () => {
+    expect(boolean.assert(true)).to.equal(true);
+    expect(() => boolean.assert(undefined)).to.throw(ValidationError);
   });
-  describe("asyncTest", async () => {
+  describe("assertAsync", async () => {
     const schema = boolean;
-    expect(schema.asyncTest(true)).to.be.a("Promise");
-    expect(await schema.asyncTest(true)).to.equal(true);
-    expect(schema.asyncTest(42)).to.eventually.be.rejectedWith(ValidationError);
+    expect(schema.assertAsync(true)).to.be.a("Promise");
+    expect(await schema.assertAsync(true)).to.equal(true);
+    expect(schema.assertAsync(42)).to.eventually.be.rejectedWith(
+      ValidationError
+    );
   });
 
   describe("optional", () => {
@@ -97,17 +99,17 @@ describe("map", () => {
     const schema = object({ a: any })
       .map(({ a }) => a)
       .greater(2);
-    expect(await schema.asyncValidate({ a: 42 })).to.be.valid.and.have.result(
+    expect(await schema.validateAsync({ a: 42 })).to.be.valid.and.have.result(
       42
     );
-    expect(await schema.asyncValidate({ a: "foo" })).to.not.be.valid;
+    expect(await schema.validateAsync({ a: "foo" })).to.not.be.valid;
   });
 });
 
 describe("mapAsync", () => {
   it("resolves", async () => {
     const schema = number.mapAsync((v) => Promise.resolve(v * 2));
-    expect(await schema.asyncValidate(42)).to.be.valid.and.have.result(84);
+    expect(await schema.validateAsync(42)).to.be.valid.and.have.result(84);
   });
   it("errors", () => {
     const schema = <any>number.mapAsync((v) => Promise.resolve(v * 2));
@@ -161,9 +163,9 @@ describe("or", () => {
   });
   it("async", async () => {
     const schema = number.or(string);
-    expect(await schema.asyncValidate(42)).to.be.valid;
-    expect(await schema.asyncValidate("foo")).to.be.valid;
-    expect(await schema.asyncValidate([])).to.not.be.valid;
+    expect(await schema.validateAsync(42)).to.be.valid;
+    expect(await schema.validateAsync("foo")).to.be.valid;
+    expect(await schema.validateAsync([])).to.not.be.valid;
   });
 });
 
@@ -186,10 +188,10 @@ describe("xor", () => {
   });
   it("async", async () => {
     const schema = string.includes("foo").xor(string.includes("bar"));
-    expect(await schema.asyncValidate("foo")).to.be.valid;
-    expect(await schema.asyncValidate("bar")).to.be.valid;
-    expect(await schema.asyncValidate("foobar")).to.not.be.valid;
-    expect(await schema.asyncValidate("bum")).to.not.be.valid;
+    expect(await schema.validateAsync("foo")).to.be.valid;
+    expect(await schema.validateAsync("bar")).to.be.valid;
+    expect(await schema.validateAsync("foobar")).to.not.be.valid;
+    expect(await schema.validateAsync("bum")).to.not.be.valid;
   });
 });
 
@@ -208,9 +210,9 @@ describe("and", () => {
   });
   it("async", async () => {
     const schema = object({ a: number }).and(object({ b: number }));
-    expect(await schema.asyncValidate({ a: 42, b: 42 })).to.be.valid;
-    expect(await schema.asyncValidate({ a: "foo", b: 42 })).to.not.be.valid;
-    expect(await schema.asyncValidate({ a: 42, b: "foo" })).to.not.be.valid;
+    expect(await schema.validateAsync({ a: 42, b: 42 })).to.be.valid;
+    expect(await schema.validateAsync({ a: "foo", b: 42 })).to.not.be.valid;
+    expect(await schema.validateAsync({ a: 42, b: "foo" })).to.not.be.valid;
   });
 });
 

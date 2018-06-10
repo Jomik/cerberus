@@ -22,39 +22,39 @@ describe("number", () => {
   property(
     "positive",
     QC.int,
-    (x) => number.positive().validate(x).result.valid === x > 0
+    (x) => number.positive().validate(x).info.valid === x > 0
   );
   property(
     "negative",
     QC.int,
-    (x) => number.negative().validate(x).result.valid === x < 0
+    (x) => number.negative().validate(x).info.valid === x < 0
   );
   property(
     "between",
     QC.int.three(),
     ([x, y, z]) =>
-      number.between(y, z).validate(x).result.valid === (x > y && x < z)
+      number.between(y, z).validate(x).info.valid === (x > y && x < z)
   );
   describe("relations", () => {
     property(
       "greater",
       QC.int.two(),
-      ([x, y]) => number.greater(x).validate(y).result.valid === y > x
+      ([x, y]) => number.greater(x).validate(y).info.valid === y > x
     );
     property(
       "greaterEqual",
       QC.int.two(),
-      ([x, y]) => number.greaterEqual(x).validate(y).result.valid === y >= x
+      ([x, y]) => number.greaterEqual(x).validate(y).info.valid === y >= x
     );
     property(
       "lessEqual",
       QC.int.two(),
-      ([x, y]) => number.lessEqual(x).validate(y).result.valid === y <= x
+      ([x, y]) => number.lessEqual(x).validate(y).info.valid === y <= x
     );
     property(
       "less",
       QC.int.two(),
-      ([x, y]) => number.less(x).validate(y).result.valid === y < x
+      ([x, y]) => number.less(x).validate(y).info.valid === y < x
     );
   });
 });
