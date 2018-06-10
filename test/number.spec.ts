@@ -16,14 +16,9 @@ describe("number", () => {
     });
   });
   it("integer", () => {
-    expect(number.integer().validate(42)).to.be.valid;
-    expect(number.integer().validate(42.42)).to.not.be.valid;
+    expect(integer.validate(42)).to.be.valid;
+    expect(integer.validate(42.42)).to.not.be.valid;
   });
-  property(
-    "multiple",
-    QC.int.two(),
-    ([x, y]) => number.multiple(x).validate(y).result.valid === (y % x === 0)
-  );
   property(
     "positive",
     QC.int,
@@ -50,11 +45,6 @@ describe("number", () => {
       "greaterEqual",
       QC.int.two(),
       ([x, y]) => number.greaterEqual(x).validate(y).result.valid === y >= x
-    );
-    property(
-      "equal",
-      QC.int.two(),
-      ([x, y]) => number.equal(x).validate(y).result.valid === (y === x)
     );
     property(
       "lessEqual",

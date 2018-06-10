@@ -3,12 +3,8 @@ import {
   validationError,
   propertyError,
   orError,
-  typeError,
-  ValidationError,
-  arrayError,
-  objectError
+  ValidationError
 } from "./errors";
-import { Id } from "./types";
 // tslint:disable:variable-name
 
 export abstract class Validator<PA extends boolean, A> {
@@ -80,17 +76,8 @@ export abstract class Validator<PA extends boolean, A> {
     return new DefaultValidator(this, def);
   }
 
-  integer(this: Validator<any, number>): Validator<PA, number>;
-  integer(this: Validator<any, number>): Validator<any, number> {
-    return this.chain(integer);
-  }
-
-  equal(value: A) {
-    return this.chain(is(value));
-  }
-
   not(value: A) {
-    return this.chain(not(value));
+    return this.chain(predicate<A>((v) => v !== value, `must not be ${value}`));
   }
 
   length<P extends boolean>(
@@ -117,10 +104,7 @@ export abstract class Validator<PA extends boolean, A> {
   ): Validator<PA, A>;
   includes<P extends boolean>(value: any): Validator<any, A> {
     return this.chain(
-      predicate<any>(
-        (v) => v.includes(value),
-        validationError(`must include ${value}`)
-      )
+      predicate<any>((v) => v.includes(value), `must include ${value}`)
     );
   }
 
@@ -171,10 +155,6 @@ export abstract class Validator<PA extends boolean, A> {
 
   negative(this: Validator<any, number>): Validator<PA, number> {
     return this.less(0);
-  }
-
-  multiple(this: Validator<any, number>, base: number): Validator<PA, number> {
-    return this.chain(multiple(base));
   }
 }
 
@@ -365,11 +345,10 @@ export function mapAsync<A, B>(
 }
 
 class PredicateValidator<A> extends Validator<false, A> {
-  constructor(
-    private f: (value: A) => boolean,
-    private error: ValidationError
-  ) {
+  error: ValidationError;
+  constructor(private f: (value: A) => boolean, error: string) {
     super();
+    this.error = new ValidationError(error);
   }
 
   validate(value: A): Result<A> {
@@ -379,242 +358,31 @@ class PredicateValidator<A> extends Validator<false, A> {
 
 function predicate<A>(
   f: (value: A) => boolean,
-  error: ValidationError
+  error: string
 ): Validator<false, A> {
   return new PredicateValidator(f, error);
 }
 
-// Initializers
-export const number = predicate<number>(
-  (v) => typeof v === "number",
-  typeError("must be a number")
-);
-
-export const integer = predicate<number>(
-  (v) => Number.isInteger(v),
-  typeError("must be an integer")
-);
-
-export const string = predicate<string>(
-  (v) => typeof v === "string",
-  typeError("must be a string")
-);
-
-export const boolean = predicate<boolean>(
-  (v) => typeof v === "boolean",
-  typeError("must be a boolean")
-);
-
-export const required = predicate<any>(
-  (v) => v !== undefined && v !== null,
-  validationError("must be defined")
-);
-
-export const forbidden = predicate<undefined>(
-  (v) => v === undefined,
-  validationError("must be undefined")
-);
-
-export const nil = predicate<null>(
-  (v) => v === null,
-  typeError("must be null")
-);
-
-class AnyValidator extends Validator<false, any> {
-  validate(value: any) {
-    return valid(value);
-  }
-}
-export const any: Validator<false, any> = new AnyValidator();
-
-class ArrayValidator<P extends boolean, A> extends Validator<P, A[]> {
-  constructor(private validator: Validator<P, A>) {
-    super();
-  }
-
-  private logic(results: Result<A>[]) {
-    let errors: [number, ValidationError][] = [];
-    const values = results.map((r, i) =>
-      r.match({
-        valid: (v) => v,
-        invalid: (e) => {
-          errors.push([i, e]);
-          return <A>(undefined as any);
-        }
-      })
-    );
-    return errors.length === 0
-      ? valid(values)
-      : invalid<A[]>(arrayError(errors));
-  }
-
-  validate(this: ArrayValidator<false, any>, value: any) {
-    if (Array.isArray(value)) {
-      return this.logic(value.map((v) => this.validator.validate(v)));
-    }
-    return invalid<A[]>(typeError("must be an array"));
-  }
-
-  async asyncValidate(value: any) {
-    if (Array.isArray(value)) {
-      const results = await Promise.all(
-        value.map((v) => this.validator.asyncValidate(v))
-      );
-      return this.logic(results);
-    }
-    return invalid<A[]>(typeError("must be an array"));
-  }
-}
-export function array<P extends boolean, A>(
-  validator: Validator<P, A>
-): Validator<P, A[]> {
-  return new ArrayValidator(validator);
+function greater<A>(value: A) {
+  return predicate<A>((v) => v > value, `must be greater than ${value}`);
 }
 
-export type SchemaEntry<P extends boolean, A extends object, B> =
-  | Validator<P, B>
-  | ((obj: A) => Validator<P, B>);
-export type Schema<P extends boolean, A extends object> = {
-  [K in keyof A]: SchemaEntry<P, A, A[K]>
-};
-
-class ObjectValidator<P extends boolean, A extends object> extends Validator<
-  P,
-  A
-> {
-  private schemaEntries: [keyof A, Validator<P, A[keyof A]>][];
-  private schemaEntriesFunc: [keyof A, (obj: A) => Validator<P, A[keyof A]>][];
-  constructor(private schema: Schema<P, A>, private strict: boolean = false) {
-    super();
-
-    const entries = Object.entries<SchemaEntry<P, A, A>>(<any>schema);
-    this.schemaEntries = <any>(
-      entries.filter(([k, v]) => typeof v !== "function")
-    );
-    this.schemaEntriesFunc = <any>(
-      entries.filter(([k, v]) => typeof v === "function")
-    );
-  }
-
-  validate(this: ObjectValidator<false, any>, value: any): Result<A> {
-    if (typeof value === "object" && !Array.isArray(value)) {
-      let obj: A = <any>{};
-      let errors: [string, ValidationError][] = [];
-      const keys = new Set(Object.keys(value));
-
-      const basicResults = this.schemaEntries.map(
-        ([k, v]) => <[keyof A, Result<A[keyof A]>]>[k, v.validate(value[k])]
-      );
-      for (const [k, res] of basicResults) {
-        res.match<void>({
-          valid: (v) => (obj[k] = v),
-          invalid: (e) => errors.push([k.toString(), e])
-        });
-        keys.delete(k.toString());
-      }
-
-      if (errors.length > 0) {
-        return invalid(objectError(errors));
-      }
-
-      for (const [k, vali] of this.schemaEntriesFunc) {
-        const res = vali(obj).validate(value[k]);
-        const err = res.match<ValidationError | void>({
-          valid: (v) => {
-            obj[<keyof A>k] = v;
-          },
-          invalid: (e) => e
-        });
-        if (err !== undefined) {
-          return invalid(objectError(<any>[k, err]));
-        }
-        keys.delete(k.toString());
-      }
-
-      if (this.strict) {
-        if (keys.size > 0) {
-          return invalid<any>(
-            validationError(`unknown key(s): ${Array.from(keys).join(", ")}`)
-          );
-        }
-      } else {
-        for (const k of keys) {
-          obj[k] = value[k];
-        }
-      }
-      return valid(obj);
-    }
-    return invalid(typeError("must be an object"));
-  }
-
-  async asyncValidate(value: any): Promise<Result<A>> {
-    if (typeof value === "object" && !Array.isArray(value)) {
-      let obj: A = <any>{};
-      let errors: [string, ValidationError][] = [];
-      const keys = new Set(Object.keys(value));
-
-      const basicResults = await Promise.all(
-        this.schemaEntries.map(
-          async ([k, v]) =>
-            <[keyof A, Result<A[keyof A]>]>[k, await v.asyncValidate(value[k])]
-        )
-      );
-      for (const [k, res] of basicResults) {
-        res.match<void>({
-          valid: (v) => (obj[k] = v),
-          invalid: (e) => errors.push([k.toString(), e])
-        });
-        keys.delete(k.toString());
-      }
-
-      if (errors.length > 0) {
-        return invalid(objectError(errors));
-      }
-
-      for (const [k, vali] of this.schemaEntriesFunc) {
-        const res = await vali(obj).asyncValidate(value[k]);
-        const err = res.match<ValidationError | void>({
-          valid: (v) => {
-            obj[k] = v;
-          },
-          invalid: (e) => e
-        });
-        if (err !== undefined) {
-          return invalid(objectError([[k.toString(), err]]));
-        }
-        keys.delete(k.toString());
-      }
-
-      if (this.strict) {
-        if (keys.size > 0) {
-          return invalid<any>(
-            validationError(`unknown key(s): ${Array.from(keys).join(", ")}`)
-          );
-        }
-      } else {
-        for (const k of keys) {
-          obj[k] = value[k];
-        }
-      }
-      return valid(obj);
-    }
-    return invalid(typeError("must be an object"));
-  }
+function greaterEqual<A>(value: A) {
+  return predicate<A>(
+    (v) => v >= value,
+    `must be greater than or equal to ${value}`
+  );
 }
 
-export function object<A extends object>(
-  schema: Schema<false, A>,
-  strict?: boolean
-): Validator<false, A>;
-export function object<A extends object>(
-  schema: Schema<boolean, A>,
-  strict?: boolean
-): Validator<true, A>;
-export function object<PA extends boolean, A extends object>(
-  schema: Schema<PA, A>,
-  strict: boolean = false
-): Validator<PA, A> {
-  return new ObjectValidator(schema, strict);
+function less<A>(value: A) {
+  return predicate<A>((v) => v < value, `must be less than ${value}`);
+}
+
+function lessEqual<A>(value: A) {
+  return predicate<A>(
+    (v) => v <= value,
+    `must be less than or equal to ${value}`
+  );
 }
 
 // General validators
@@ -644,13 +412,20 @@ class PropertyValidator<
   A,
   T extends keyof A
 > extends Validator<PA, A> {
+  private static readonly dummy = new class extends Validator<false, any> {
+    validate(value) {
+      return valid(value);
+    }
+  }();
+
   private validator: Validator<PA, any>;
+
   constructor(
     private prop: T,
     validator: (v: Validator<false, A[T]>) => Validator<PA, any>
   ) {
     super();
-    this.validator = validator(any);
+    this.validator = validator(PropertyValidator.dummy);
   }
 
   validate(this: PropertyValidator<false, any, any>, value: A) {
@@ -667,54 +442,4 @@ class PropertyValidator<
       invalid: (e) => invalid(propertyError(this.prop.toString(), e))
     });
   }
-}
-
-// Operators
-
-export function is<A>(value: A) {
-  return predicate<A>((v) => v === value, validationError(`must be ${value}`));
-}
-
-function not<A>(value: A) {
-  return predicate<A>(
-    (v) => v !== value,
-    validationError(`must not be ${value}`)
-  );
-}
-
-function greater<A>(value: A) {
-  return predicate<A>(
-    (v) => v > value,
-    validationError(`must be greater than ${value}`)
-  );
-}
-
-function greaterEqual<A>(value: A) {
-  return predicate<A>(
-    (v) => v >= value,
-    validationError(`must be greater than or equal to ${value}`)
-  );
-}
-
-function less<A>(value: A) {
-  return predicate<A>(
-    (v) => v < value,
-    validationError(`must be less than ${value}`)
-  );
-}
-
-function lessEqual<A>(value: A) {
-  return predicate<A>(
-    (v) => v <= value,
-    validationError(`must be less than or equal to ${value}`)
-  );
-}
-
-// Number
-
-function multiple(base: number) {
-  return predicate<number>(
-    (v) => Number.isInteger(v / base),
-    validationError(`must be a multiple of ${base}`)
-  );
 }

@@ -75,7 +75,7 @@ export class ValidationOrError extends ValidationError {
     public readonly left: ValidationError,
     public readonly right: ValidationError
   ) {
-    super(`must fix ${left.details()} or ${right.details()}`);
+    super(`must satisfy ${left.details()} or ${right.details()}`);
   }
 }
 
