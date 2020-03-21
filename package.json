@@ -46,7 +46,7 @@
     "mocha": "^5.2.0",
     "np": "^3.0.1",
     "nyc": "^12.0.1",
-    "prettier": "^1.13.3",
+    "prettier": "^2.0.0",
     "proptest": "0.0.4",
     "source-map-support": "^0.5.6",
     "ts-node": "^6.0.5",
